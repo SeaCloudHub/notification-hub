@@ -1,13 +1,16 @@
 package skio
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
+	"github.com/SeaCloudHub/notification-hub/domain/identity"
 	socketio "github.com/googollee/go-socket.io"
 	"github.com/googollee/go-socket.io/engineio"
 	"github.com/googollee/go-socket.io/engineio/transport"
 	"github.com/googollee/go-socket.io/engineio/transport/websocket"
+	"github.com/labstack/echo/v4"
 )
 
 type RealtimeEngine interface {
@@ -18,19 +21,19 @@ type RealtimeEngine interface {
 
 type rtEngine struct {
 	server  *socketio.Server
-	storage map[int][]AppSocket
+	storage map[string][]AppSocket
 	locker  *sync.RWMutex
 }
 
 func NewEngine() *rtEngine {
 	return &rtEngine{
 
-		storage: make(map[int][]AppSocket),
+		storage: make(map[string][]AppSocket),
 		locker:  new(sync.RWMutex),
 	}
 }
 
-func (engine *rtEngine) saveAppSocket(userId int, appSck AppSocket) {
+func (engine *rtEngine) saveAppSocket(userId string, appSck AppSocket) {
 	engine.locker.Lock()
 
 	if v, ok := engine.storage[userId]; ok {
@@ -40,7 +43,7 @@ func (engine *rtEngine) saveAppSocket(userId int, appSck AppSocket) {
 	}
 }
 
-func (engine *rtEngine) getAppSocket(userId int) []AppSocket {
+func (engine *rtEngine) getAppSocket(userId string) []AppSocket {
 	engine.locker.RLock()
 
 	defer engine.locker.RUnlock()
@@ -48,7 +51,7 @@ func (engine *rtEngine) getAppSocket(userId int) []AppSocket {
 	return engine.storage[userId]
 }
 
-func (engine *rtEngine) removeAppSocket(userId int, appSck AppSocket) {
+func (engine *rtEngine) removeAppSocket(userId string, appSck AppSocket) {
 	engine.locker.Lock()
 	defer engine.locker.Unlock()
 
@@ -62,7 +65,7 @@ func (engine *rtEngine) removeAppSocket(userId int, appSck AppSocket) {
 	}
 }
 
-func (engine *rtEngine) UserSockets(userId int) []AppSocket {
+func (engine *rtEngine) UserSockets(userId string) []AppSocket {
 	var sockets []AppSocket
 
 	if scks, ok := engine.storage[userId]; ok {
@@ -77,7 +80,7 @@ func (engine *rtEngine) EmitToRoom(room string, key string, data interface{}) er
 	return nil
 }
 
-func (engine *rtEngine) EmitToUser(userId int, key string, data interface{}) error {
+func (engine *rtEngine) EmitToUser(userId string, key string, data interface{}) error {
 	sockets := engine.getAppSocket(userId)
 
 	for _, s := range sockets {
@@ -87,7 +90,7 @@ func (engine *rtEngine) EmitToUser(userId int, key string, data interface{}) err
 	return nil
 }
 
-func (engine *rtEngine) Run() error {
+func (engine *rtEngine) Run(e *echo.Echo, identitySvc identity.Service) error {
 	server, err := socketio.NewServer(&engineio.Options{
 		Transports: []transport.Transport{websocket.Default},
 	})
@@ -112,7 +115,25 @@ func (engine *rtEngine) Run() error {
 	})
 
 	server.OnEvent("/", "authenticate", func(s socketio.Conn, token string) {
+		iden, err := identitySvc.WhoAmI(context.TODO(), token)
+		if err != nil {
+			s.Emit("authentication_failure", err)
+			s.Close()
+			return
+		}
 
+		appSck := NewAppSocket(s)
+
+		engine.saveAppSocket(iden.ID, appSck)
+
+		s.Emit("authenticated", iden)
+	})
+
+	go server.Serve()
+
+	e.Any("/socket.io/", func(context echo.Context) error {
+		server.ServeHTTP(context.Response(), context.Request())
+		return nil
 	})
 
 	return nil
