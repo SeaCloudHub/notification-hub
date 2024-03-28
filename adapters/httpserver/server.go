@@ -46,14 +46,17 @@ func New(cfg *config.Config, logger *zap.SugaredLogger, options ...Options) (*Se
 
 	s.RegisterGlobalMiddlewares()
 	s.RegisterHealthCheck(s.router.Group(""))
+	s.RegisterWebSocket(s.router.Group(""))
 
-	authMiddleware := s.NewAuthentication("header:Authorization", "Bearer",
-		[]string{
-			"/healthz",
-			"/api/users/login"},
-	).Middleware()
+	// authMiddleware := s.NewAuthentication("header:Authorization", "Bearer",
+	// 	[]string{
+	// 		"/healthz",
+	// 		"/api/users/login",
+	// 		"/demo",
+	// 	},
+	// ).Middleware()
 
-	s.router.Use(authMiddleware)
+	// s.router.Use(authMiddleware)
 
 	s.RegisterUserRoutes(s.router.Group("/api/users"))
 
@@ -88,6 +91,13 @@ func (s *Server) RegisterHealthCheck(router *echo.Group) {
 	router.GET("/healthz", func(c echo.Context) error {
 		return c.String(http.StatusOK, "OK!!!")
 	})
+}
+
+func (s *Server) RegisterWebSocket(router *echo.Group) {
+	// router.GET("/demo", func(c echo.Context) error {
+	// 	return c.String(http.StatusOK, "OK!!!")
+	// })
+	router.File("/demo", "./demo.html")
 }
 
 func (s *Server) handleError(c echo.Context, err error, status int) error {

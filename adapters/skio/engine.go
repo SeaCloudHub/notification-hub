@@ -101,6 +101,7 @@ func (engine *rtEngine) Run(e *echo.Echo, identitySvc identity.Service) error {
 	engine.server = server
 
 	server.OnConnect("/", func(s socketio.Conn) error {
+		fmt.Print("connecting")
 		s.SetContext("")
 		return nil
 	})
@@ -109,9 +110,9 @@ func (engine *rtEngine) Run(e *echo.Echo, identitySvc identity.Service) error {
 		fmt.Errorf("rtEngine.Run.OnError: ", err)
 	})
 
-	server.OnDisconnect("/", func(c socketio.Conn, s string) {
+	// server.OnDisconnect("/", func(c socketio.Conn, s string) {
 
-	})
+	// })
 
 	server.OnEvent("/", "authenticate", func(s socketio.Conn, token string) {
 		iden, err := identitySvc.WhoAmI(context.TODO(), token)

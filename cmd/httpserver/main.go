@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/SeaCloudHub/notification-hub/adapters/httpserver"
-	redisstore "github.com/SeaCloudHub/notification-hub/adapters/redis_store"
 
 	"github.com/SeaCloudHub/notification-hub/pkg/config"
 	"github.com/SeaCloudHub/notification-hub/pkg/logger"
@@ -47,11 +46,11 @@ func main() {
 		applog.Fatal(err)
 	}
 
-	redisSvc, err := redisstore.NewRedisStorage(cfg)
-	if err != nil {
-		applog.Fatal(err)
-	}
-	server.RedisSvc = redisSvc
+	// redisSvc, err := redisstore.NewRedisStorage(cfg)
+	// if err != nil {
+	// 	applog.Fatal(err)
+	// }
+	// server.RedisSvc = redisSvc
 	addr := fmt.Sprintf(":%d", cfg.Port)
 	applog.Info("server started!")
 	applog.Fatal(http.ListenAndServe(addr, server))
