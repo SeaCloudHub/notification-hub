@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/SeaCloudHub/notification-hub/adapters/skio"
 	"github.com/SeaCloudHub/notification-hub/domain/identity"
 	"github.com/SeaCloudHub/notification-hub/domain/permission"
 	"github.com/SeaCloudHub/notification-hub/pkg/config"
@@ -55,6 +56,10 @@ func New(cfg *config.Config, logger *zap.SugaredLogger, options ...Options) (*Se
 	s.router.Use(authMiddleware)
 
 	s.RegisterUserRoutes(s.router.Group("/api/users"))
+
+	if err := skio.NewEngine().Run(s.router, s.IdentityService); err != nil {
+		return nil, err
+	}
 
 	return &s, nil
 }

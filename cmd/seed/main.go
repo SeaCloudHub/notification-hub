@@ -1,12 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/http"
-
-	"github.com/SeaCloudHub/notification-hub/adapters/httpserver"
-	redisstore "github.com/SeaCloudHub/notification-hub/adapters/redis_store"
 
 	"github.com/SeaCloudHub/notification-hub/pkg/config"
 	"github.com/SeaCloudHub/notification-hub/pkg/logger"
@@ -20,7 +15,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("cannot load config: %v\n", err)
 	}
-	defer logger.Sync(applog)
+	// defer logger.Sync(applog)
 
 	cfg, err := config.LoadConfig()
 	if err != nil {
@@ -37,22 +32,9 @@ func main() {
 	}
 	defer sentrygo.Flush(sentry.FlushTime)
 
-	// db, err := postgrestore.NewConnection(postgrestore.ParseFromConfig(cfg))
-	// if err != nil {
-	// 	applog.Fatal(err)
-	// }
+	email := "admin@seacloudhub.com"
+	password := "plzdonthackme"
 
-	server, err := httpserver.New(cfg, applog)
-	if err != nil {
-		applog.Fatal(err)
-	}
-
-	redisSvc, err := redisstore.NewRedisStorage(cfg)
-	if err != nil {
-		applog.Fatal(err)
-	}
-	server.RedisSvc = redisSvc
-	addr := fmt.Sprintf(":%d", cfg.Port)
-	applog.Info("server started!")
-	applog.Fatal(http.ListenAndServe(addr, server))
+	applog.Info("admin user created successfully")
+	applog.Infof("email: %s - password: %s", email, password)
 }

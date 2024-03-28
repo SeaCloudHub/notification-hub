@@ -27,7 +27,6 @@ type rtEngine struct {
 
 func NewEngine() *rtEngine {
 	return &rtEngine{
-
 		storage: make(map[string][]AppSocket),
 		locker:  new(sync.RWMutex),
 	}
