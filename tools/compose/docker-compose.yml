@@ -1,0 +1,154 @@
+version: '3'
+
+services:
+  filerstore:
+    image: mongo:7.0.5
+    ports:
+      - 27017:27017
+    volumes:
+      - filerstore:/data/db
+    networks:
+      - seacloudserver
+
+  seaweedfs-master:
+    image: chrislusf/seaweedfs:3.63
+    ports:
+      - 9333:9333
+      - 19333:19333
+    command: master -ip=seaweedfs-master -ip.bind=0.0.0.0
+    networks:
+      - seacloudserver
+
+  seaweedfs-volume:
+    image: chrislusf/seaweedfs:3.63
+    ports:
+      - 8080:8080
+      - 18080:18080
+    command: volume -mserver="seaweedfs-master:9333" -ip.bind=0.0.0.0 -port=8080
+    volumes:
+      - seaweedfs:/data
+    depends_on:
+      - seaweedfs-master
+    networks:
+      - seacloudserver
+
+  seaweedfs-filer:
+    image: chrislusf/seaweedfs:3.63
+    ports:
+      - 8888:8888
+      - 18888:18888
+    command: filer -master="seaweedfs-master:9333" -ip.bind=0.0.0.0
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./filer.toml:/etc/seaweedfs/filer.toml
+    depends_on:
+      - seaweedfs-master
+      - seaweedfs-volume
+      - filerstore
+    networks:
+      - seacloudserver
+
+  kratosdb:
+    image: postgres:15-alpine3.18
+    environment:
+      POSTGRES_DB: ${KRATOS_DB_NAME}
+      POSTGRES_USER: ${KRATOS_DB_USER}
+      POSTGRES_PASSWORD: ${KRATOS_DB_PASS}
+    ports:
+      - ${KRATOS_DB_PORT}:5432
+    volumes:
+      - kratosdb:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD, pg_isready, -U, postgres]
+      interval: 5s
+      retries: 5
+    restart: always
+    networks:
+      - seacloudserver
+
+  kratos:
+    image: oryd/kratos:v1.1.0
+    environment:
+      - DSN=postgresql://${KRATOS_DB_USER}:${KRATOS_DB_PASS}@kratosdb:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
+    entrypoint: [/bin/sh, -c]
+    command:
+      - |
+        kratos migrate -c /home/ory/kratos.yml sql -ey
+        kratos serve -c /home/ory/kratos.yml --dev --watch-courier
+    ports:
+      - 4433:4433
+      - 4434:4434
+    volumes:
+      - ./kratos.yml:/home/ory/kratos.yml
+      - ./identity.schema.json:/home/ory/identity.schema.json
+    depends_on:
+      - kratosdb
+    networks:
+      - seacloudserver
+
+  ketodb:
+    image: postgres:15-alpine3.18
+    environment:
+      POSTGRES_DB: ${KETO_DB_NAME}
+      POSTGRES_USER: ${KETO_DB_USER}
+      POSTGRES_PASSWORD: ${KETO_DB_PASS}
+    ports:
+      - ${KETO_DB_PORT}:5432
+    volumes:
+      - ketodb:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD, pg_isready, -U, postgres]
+      interval: 5s
+      retries: 5
+    restart: always
+    networks:
+      - seacloudserver
+
+  keto:
+    image: oryd/keto:v0.12.0
+    environment:
+      - DSN=postgresql://${KETO_DB_USER}:${KETO_DB_PASS}@ketodb:5432/keto?sslmode=disable&max_conns=20&max_idle_conns=4
+    entrypoint: [/bin/sh, -c]
+    command:
+      - |
+        keto migrate up -c /home/ory/keto.yml -y
+        keto serve -c /home/ory/keto.yml
+    ports:
+      - 4466:4466
+      - 4467:4467
+    volumes:
+      - ./keto.yml:/home/ory/keto.yml
+      - ./namespaces.keto.ts:/home/ory/namespaces.keto.ts
+    depends_on:
+      - ketodb
+    networks:
+      - seacloudserver
+
+  appdb:
+    image: postgres:15-alpine3.18
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    ports:
+      - ${DB_PORT}:5432
+    volumes:
+      - appdb:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD, pg_isready, -U, postgres]
+      interval: 5s
+      retries: 5
+    restart: always
+    networks:
+      - seacloudserver
+
+volumes:
+  seaweedfs:
+  filerstore:
+  kratosdb:
+  ketodb:
+  appdb:
+
+networks:
+  seacloudserver:
