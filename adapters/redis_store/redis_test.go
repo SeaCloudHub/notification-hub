@@ -23,7 +23,7 @@ func TestConnectRedis(t *testing.T) {
 
 	result := redisStorage.Store.Ping(ctx)
 	if result.Err() != nil {
-		t.Error()
+		t.Error(err)
 	}
 
 }
