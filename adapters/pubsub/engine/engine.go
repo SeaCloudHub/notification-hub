@@ -2,16 +2,15 @@ package engine
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/SeaCloudHub/notification-hub/adapters/pubsub"
 	redisstore "github.com/SeaCloudHub/notification-hub/adapters/redis_store"
-	"github.com/SeaCloudHub/notification-hub/domain/notification"
+	"go.uber.org/zap"
 )
 
 type redisPubsub struct {
 	engineRedis redisstore.RedisStorage
-	notiStorage notification.Storage
+	logger      *zap.SugaredLogger
 }
 
 func (ps *redisPubsub) Publish(ctx context.Context, topic pubsub.Topic, data *pubsub.Message) error {
@@ -28,7 +27,7 @@ func (ps *redisPubsub) Subscribe(ctx context.Context, topic pubsub.Topic) (ch <-
 		for {
 			message, err := sub.ReceiveMessage(ctx)
 			if err != nil {
-				fmt.Println(err)
+				ps.logger.Error("received error", message)
 				break
 			}
 
@@ -37,6 +36,8 @@ func (ps *redisPubsub) Subscribe(ctx context.Context, topic pubsub.Topic) (ch <-
 			msg.SetData([]byte(message.Payload))
 
 			c <- msg
+
+			break
 		}
 	}()
 
