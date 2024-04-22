@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strings"
 
+	realtimePubsub "github.com/SeaCloudHub/notification-hub/adapters/realtime_pubsub"
+
 	"github.com/SeaCloudHub/notification-hub/adapters/skio"
 	"github.com/SeaCloudHub/notification-hub/domain/identity"
 	"github.com/SeaCloudHub/notification-hub/domain/permission"
@@ -23,6 +25,9 @@ type Server struct {
 	Logger *zap.SugaredLogger
 
 	// storage adapters
+
+	// pubsub
+	pubsub realtimePubsub.Pubsub
 
 	//redis
 	RedisSvc Rediser
@@ -48,15 +53,15 @@ func New(cfg *config.Config, logger *zap.SugaredLogger, options ...Options) (*Se
 	s.RegisterHealthCheck(s.router.Group(""))
 	s.RegisterWebSocket(s.router.Group(""))
 
-	// authMiddleware := s.NewAuthentication("header:Authorization", "Bearer",
-	// 	[]string{
-	// 		"/healthz",
-	// 		"/api/users/login",
-	// 		"/demo",
-	// 	},
-	// ).Middleware()
+	authMiddleware := s.NewAuthentication("header:Authorization", "Bearer",
+		[]string{
+			"/healthz",
+			"/api/users/login",
+			"/demo",
+		},
+	).Middleware()
 
-	// s.router.Use(authMiddleware)
+	s.router.Use(authMiddleware)
 
 	s.RegisterUserRoutes(s.router.Group("/api/users"))
 

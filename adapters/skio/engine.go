@@ -14,9 +14,9 @@ import (
 )
 
 type RealtimeEngine interface {
-	UserSockets(userId int) []AppSocket
+	UserSockets(userId string) []AppSocket
 	EmitToRoom(room string, key string, data interface{}) error
-	EmitToUser(userId int, key string, data interface{}) error
+	EmitToUser(userId string, key string, data interface{}) error
 }
 
 type rtEngine struct {
@@ -40,6 +40,8 @@ func (engine *rtEngine) saveAppSocket(userId string, appSck AppSocket) {
 	} else {
 		engine.storage[userId] = []AppSocket{appSck}
 	}
+
+	engine.locker.Unlock()
 }
 
 func (engine *rtEngine) getAppSocket(userId string) []AppSocket {

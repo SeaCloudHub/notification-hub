@@ -1,4 +1,4 @@
-package pubsub
+package realtimePubsub
 
 import (
 	"fmt"
@@ -31,10 +31,6 @@ func (evt *Message) Channel() Topic {
 
 func (evt *Message) SetChannel(channel Topic) {
 	evt.chanel = channel
-}
-
-func (evt *Message) SetData(data interface{}) {
-	evt.data = data
 }
 
 func (evt *Message) Data() interface{} {
