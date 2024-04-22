@@ -1,11 +1,11 @@
 package httpserver
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/SeaCloudHub/notification-hub/adapters/httpserver/model"
-	"github.com/SeaCloudHub/notification-hub/domain/identity"
+	realtimePubsub "github.com/SeaCloudHub/notification-hub/adapters/realtime_pubsub"
+	"github.com/SeaCloudHub/notification-hub/adapters/subcriber"
 	"github.com/SeaCloudHub/notification-hub/pkg/mycontext"
 	"github.com/labstack/echo/v4"
 )
@@ -20,14 +20,7 @@ func (s *Server) Notification(c echo.Context) error {
 		return s.handleError(c, err, http.StatusBadRequest)
 	}
 
-	session, err := s.IdentityService.Login(ctx, req.Email, req.Password)
-	if err != nil {
-		if errors.Is(err, identity.ErrInvalidCredentials) {
-			return s.handleError(c, err, http.StatusBadRequest)
-		}
+	s.pubsub.Publish(ctx, subcriber.UserNotificationChannel, realtimePubsub.NewMessage(req))
 
-		return s.handleError(c, err, http.StatusInternalServerError)
-	}
-
-	return s.success(c, model.LoginResponse{SessionToken: *session.Token})
+	return s.success(c, model.NotificationResponse{Status: "processing"})
 }

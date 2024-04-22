@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	UserNotificationChannel = pubsub.Topic("notification-channel")
+	UserNotificationChannel  = pubsub.Topic("user-notification-channel")
+	AdminNotificationChannel = pubsub.Topic("admin-notification-channel")
 )
 
 type consumerJob struct {

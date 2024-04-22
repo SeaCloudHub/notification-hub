@@ -9,3 +9,7 @@ type NotificationRequest struct {
 	From          string         `json:"from"`
 	Notifications []Notification `json:"notifications"`
 }
+
+type NotificationResponse struct {
+	Status string `json:"status"`
+}

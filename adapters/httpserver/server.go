@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	realtimePubsub "github.com/SeaCloudHub/notification-hub/adapters/realtime_pubsub"
+	"github.com/SeaCloudHub/notification-hub/adapters/subcriber"
 
 	"github.com/SeaCloudHub/notification-hub/adapters/skio"
 	"github.com/SeaCloudHub/notification-hub/domain/identity"
@@ -65,7 +66,13 @@ func New(cfg *config.Config, logger *zap.SugaredLogger, options ...Options) (*Se
 
 	s.RegisterUserRoutes(s.router.Group("/api/users"))
 
-	if err := skio.NewEngine().Run(s.router, s.IdentityService); err != nil {
+	skioEngine := skio.NewEngine()
+
+	if err := skioEngine.Run(s.router, s.IdentityService); err != nil {
+		return nil, err
+	}
+
+	if err := subcriber.NewEngine(s.pubsub, skioEngine).Start(); err != nil {
 		return nil, err
 	}
 
