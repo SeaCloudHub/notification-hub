@@ -11,6 +11,7 @@ var Empty = new(Config)
 
 type Config struct {
 	AppEnv       string `envconfig:"APP_ENV"`
+	Debug        bool   `envconfig:"DEBUG"`
 	Port         int    `envconfig:"PORT"`
 	SentryDSN    string `envconfig:"SENTRY_DSN"`
 	AllowOrigins string `envconfig:"ALLOW_ORIGINS"`
@@ -22,12 +23,6 @@ type Config struct {
 		User      string `envconfig:"DB_USER"`
 		Pass      string `envconfig:"DB_PASS"`
 		EnableSSL bool   `envconfig:"ENABLE_SSL"`
-	}
-
-	Redis struct {
-		Addr string `envconfig:"REDIS_ADDR"`
-		Db   int    `envconfig:"REDIS_DB"`
-		Pass string `envconfig:"REDIS_PASS"`
 	}
 
 	SeaweedFS struct {

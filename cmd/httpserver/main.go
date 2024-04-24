@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/SeaCloudHub/notification-hub/adapters/httpserver"
+	"github.com/SeaCloudHub/notification-hub/adapters/postgrestore"
 
 	"github.com/SeaCloudHub/notification-hub/pkg/config"
 	"github.com/SeaCloudHub/notification-hub/pkg/logger"
@@ -36,12 +37,13 @@ func main() {
 	}
 	defer sentrygo.Flush(sentry.FlushTime)
 
-	// db, err := postgrestore.NewConnection(postgrestore.ParseFromConfig(cfg))
-	// if err != nil {
-	// 	applog.Fatal(err)
-	// }
+	db, err := postgrestore.NewConnection(postgrestore.ParseFromConfig(cfg))
+	if err != nil {
+		applog.Fatal(err)
+	}
 
 	server, err := httpserver.New(cfg, applog)
+	server.NotificationStore = postgrestore.NewNotificationStore(db)
 
 	if err != nil {
 		applog.Fatal(err)

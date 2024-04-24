@@ -32,12 +32,12 @@ func (s *NotificationStore) Create(ctx context.Context, notification *notificati
 
 func (s *NotificationStore) UpdateStatusByUid(ctx context.Context, uid string, status string) error {
 	return s.db.WithContext(ctx).Model(&NotificationSchema{}).
-		Where("uid = ?", uid).Update("status = ?", status).Error
+		Where("id = ?", uid).Update("status", status).Error
 }
 
 func (s *NotificationStore) GetByUid(ctx context.Context, uid string) (*notification.Notification, error) {
 	var noti NotificationSchema
-	err := s.db.WithContext(ctx).Where("uid = ?", uid).First(&noti).Error
+	err := s.db.WithContext(ctx).Where("id = ?", uid).First(&noti).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, identity.ErrIdentityNotFound
