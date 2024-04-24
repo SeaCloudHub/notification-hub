@@ -14,7 +14,7 @@ env:
 
 jobs:
   build_notification_hub:
-    if: github.ref == 'refs/heads/github-workflow'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
