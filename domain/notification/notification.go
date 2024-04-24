@@ -1,6 +1,8 @@
 package notification
 
-import "time"
+import (
+	"context"
+)
 
 const (
 	StatusReady      = "ready"
@@ -11,16 +13,21 @@ const (
 )
 
 type Storage interface {
+	Create(ctx context.Context, notification *Notification) (*Notification, error)
 }
 
-type Book struct {
-	ISBN      string
-	Payload   string
-	Status    string
-	CreatedAt time.Time
-	ReTriesNo int
+type Notification struct {
+	Uid     string
+	From    string
+	To      string
+	Content string
+	Status  string
 }
 
-func NewNotification(isbn string, payload string) Book {
-	return Book{ISBN: isbn, Payload: payload, CreatedAt: time.Now(), ReTriesNo: 0, Status: StatusReady}
+type SetOfNotifications struct {
+	Noitications []*Notification
+}
+
+func NewNotification(id string, from string, to string, content string) Notification {
+	return Notification{Uid: id, From: from, Status: StatusReady, Content: content}
 }

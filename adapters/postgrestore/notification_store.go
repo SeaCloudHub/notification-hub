@@ -2,24 +2,27 @@ package postgrestore
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/SeaCloudHub/notification-hub/domain/book"
-	"github.com/jmoiron/sqlx"
+	"github.com/SeaCloudHub/notification-hub/domain/notification"
+	"gorm.io/gorm"
 )
 
 type NotificationStore struct {
-	db *sqlx.DB
+	db *gorm.DB
 }
 
-func NewNotificationStore(db *sqlx.DB) *NotificationStore {
+func NewNotificationStore(db *gorm.DB) *NotificationStore {
 	return &NotificationStore{db}
 }
 
-func (s *NotificationStore) Save(ctx context.Context, b *book.Book) error {
-	_, err := s.db.ExecContext(ctx, `INSERT INTO books(isbn,name) VALUES ($1,$2)`, b.ISBN, b.Name)
-	if err != nil {
-		return fmt.Errorf("cannot save the book: %w", err)
+func (s *NotificationStore) Create(ctx context.Context, notification *notification.Notification) error {
+	notiSchema := NotificationSchema{
+		Uid:     notification.Uid,
+		From:    notification.From,
+		To:      notification.To,
+		Content: notification.Content,
+		Status:  notification.Status,
 	}
-	return nil
+
+	return s.db.WithContext(ctx).Create(&notiSchema).Error
 }
