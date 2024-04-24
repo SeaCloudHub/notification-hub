@@ -1,0 +1,89 @@
+name: Golang Notification Hub Deployment
+
+on:
+  push:
+    branches:
+      - main
+      - github-workflow
+
+env:
+  IMAGE_NAME: seacloudserver/notification
+  CONTAINER_NAME: notification-hub
+  PORT: 8089
+  ENV_FILE_NAME: .env.notification
+
+jobs:
+  make_notification_hub:
+    if: github.ref == 'refs/heads/github-workflow'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker build and push
+        run: |
+          repository_lowercase=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker build -t ghcr.io/$repository_lowercase -f cmd/httpserver/Dockerfile .
+          docker push ghcr.io/$repository_lowercase
+
+  deploy:
+    if: github.ref == 'refs/heads/github-workflow' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    needs: [make_app]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Generate env file
+        run: echo "${{ secrets.ENV_FILE }}" >> ${{ env.ENV_FILE_NAME }}
+
+      - name: SCP env file to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_IP }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: ${{ env.ENV_FILE_NAME }}
+          target: '~'
+
+      - name: SSH into VM
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VM_IP }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+            repository_lowercase=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+            docker pull ghcr.io/$repository_lowercase
+            docker tag ghcr.io/$repository_lowercase ${{ env.IMAGE_NAME }}
+            docker rmi ghcr.io/$repository_lowercase
+            
+            # Check if the container exists
+            if docker ps -a --format '{{.Names}}' | grep -Eq "^${{ env.CONTAINER_NAME }}$"; then
+              docker stop ${{ env.CONTAINER_NAME }}
+              docker rm ${{ env.CONTAINER_NAME }}
+            fi
+            
+            docker run -d --name ${{ env.CONTAINER_NAME }} --network my-net 
+            --env-file ~/${{ env.ENV_FILE_NAME }} 
+            -e VIRTUAL_HOST=${{ secrets.VIRTUAL_HOST }} 
+            -e LETSENCRYPT_HOST=${{ secrets.LETSENCRYPT_HOST }} 
+            -e LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }} 
+            -p ${{ env.PORT }}:8088 ${{ env.IMAGE_NAME }}
+
+            docker image prune -f
+            rm ~/${{ env.ENV_FILE_NAME }}
