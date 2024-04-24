@@ -42,15 +42,17 @@ func main() {
 	// }
 
 	server, err := httpserver.New(cfg, applog)
+
 	if err != nil {
 		applog.Fatal(err)
 	}
 
-	// redisSvc, err := redisstore.NewRedisStorage(cfg)
-	// if err != nil {
-	// 	applog.Fatal(err)
-	// }
-	// server.RedisSvc = redisSvc
+	if err := server.SetupEngineForPubsubAndSocket(); err != nil {
+		applog.Fatal(err)
+	}
+
+	fmt.Print(server)
+
 	addr := fmt.Sprintf(":%d", cfg.Port)
 	applog.Info("server started!")
 	applog.Fatal(http.ListenAndServe(addr, server))

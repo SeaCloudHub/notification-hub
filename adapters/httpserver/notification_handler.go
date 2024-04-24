@@ -10,7 +10,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (s *Server) Notification(c echo.Context) error {
+func (s *Server) PushNotification(c echo.Context) error {
 	var (
 		ctx = mycontext.NewEchoContextAdapter(c)
 		req model.NotificationRequest
@@ -23,4 +23,8 @@ func (s *Server) Notification(c echo.Context) error {
 	s.pubsub.Publish(ctx, subcriber.UserNotificationChannel, realtimePubsub.NewMessage(req))
 
 	return s.success(c, model.NotificationResponse{Status: "processing"})
+}
+
+func (s *Server) RegisterNotificationRoutes(router *echo.Group) {
+	router.POST("/user", s.PushNotification)
 }

@@ -24,11 +24,13 @@ func NewPubSub() *localPubsub {
 
 }
 
-func (ps *localPubsub) Publish(ctx context.Context, topic pubsub.Topic, data *pubsub.Message) error {
-	data.SetChannel(topic)
+func (ps *localPubsub) Publish(ctx context.Context, topic pubsub.Topic, msg *pubsub.Message) error {
+	msg.SetChannel(topic)
+	//data.SetData(data)
 
 	go func() {
-		ps.messageQueue <- data
+		//fmt.Print(msg)
+		ps.messageQueue <- msg
 
 	}()
 	return nil

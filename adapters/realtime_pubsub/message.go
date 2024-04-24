@@ -33,6 +33,10 @@ func (evt *Message) SetChannel(channel Topic) {
 	evt.chanel = channel
 }
 
+func (evt *Message) SetData(data interface{}) {
+	evt.data = data
+}
+
 func (evt *Message) Data() interface{} {
 	return evt.data
 }

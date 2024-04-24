@@ -2,6 +2,7 @@ package subcriber
 
 import (
 	"context"
+	"fmt"
 
 	pubsub "github.com/SeaCloudHub/notification-hub/adapters/realtime_pubsub"
 	"github.com/SeaCloudHub/notification-hub/adapters/skio"
@@ -24,22 +25,25 @@ type consumerEngine struct {
 	logger   *zap.SugaredLogger
 }
 
-func NewEngine(pubsub pubsub.Pubsub, rtEngine skio.RealtimeEngine) *consumerEngine {
+func NewEngine(pubsub pubsub.Pubsub, rtEngine skio.RealtimeEngine, logger *zap.SugaredLogger) *consumerEngine {
 	return &consumerEngine{
 		pubsub:   pubsub,
 		rtEngine: rtEngine,
+		logger:   logger,
 	}
 }
 
-func (engine *consumerEngine) startSubTopic(topic pubsub.Topic, consuconsumerJobs ...consumerJob) error {
+func (engine *consumerEngine) startSubTopic(topic pubsub.Topic, consumerJobs ...consumerJob) error {
 	ctx := context.Background()
 	c, _ := engine.pubsub.Subscribe(ctx, topic)
 
 	go func() {
-		for _, item := range consuconsumerJobs {
+		for _, item := range consumerJobs {
 			message := <-c
+			fmt.Print(message)
 			go item.Hld(ctx, message)
 		}
+
 	}()
 
 	return nil

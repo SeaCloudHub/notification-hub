@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	realtimePubsub "github.com/SeaCloudHub/notification-hub/adapters/realtime_pubsub"
+	localEngine "github.com/SeaCloudHub/notification-hub/adapters/realtime_pubsub/local_engine"
 	"github.com/SeaCloudHub/notification-hub/adapters/subcriber"
 
 	"github.com/SeaCloudHub/notification-hub/adapters/skio"
@@ -25,13 +26,8 @@ type Server struct {
 	Config *config.Config
 	Logger *zap.SugaredLogger
 
-	// storage adapters
-
 	// pubsub
 	pubsub realtimePubsub.Pubsub
-
-	//redis
-	RedisSvc Rediser
 	// services
 	IdentityService   identity.Service
 	PermissionService permission.Service
@@ -54,31 +50,37 @@ func New(cfg *config.Config, logger *zap.SugaredLogger, options ...Options) (*Se
 	s.RegisterHealthCheck(s.router.Group(""))
 	s.RegisterWebSocket(s.router.Group(""))
 
-	authMiddleware := s.NewAuthentication("header:Authorization", "Bearer",
-		[]string{
-			"/healthz",
-			"/api/users/login",
-			"/demo",
-		},
-	).Middleware()
+	// authMiddleware := s.NewAuthentication("header:Authorization", "Bearer",
+	// 	[]string{
+	// 		"/healthz",
+	// 		"/api/users/login",
+	// 		"/demo",
+	// 	},
+	// ).Middleware()
 
-	s.router.Use(authMiddleware)
+	// s.router.Use(authMiddleware)
 
 	s.RegisterUserRoutes(s.router.Group("/api/users"))
-
-	skioEngine := skio.NewEngine()
-
-	if err := skioEngine.Run(s.router, s.IdentityService); err != nil {
-		return nil, err
-	}
-
-	if err := subcriber.NewEngine(s.pubsub, skioEngine).Start(); err != nil {
-		return nil, err
-	}
+	s.RegisterNotificationRoutes(s.router.Group("api/notifications"))
 
 	return &s, nil
 }
 
+func (s *Server) SetupEngineForPubsubAndSocket() error {
+	skioEngine := skio.NewEngine()
+	s.pubsub = localEngine.NewPubSub()
+
+	if err := skioEngine.Run(s.router, s.IdentityService); err != nil {
+		return err
+	}
+
+	if err := subcriber.NewEngine(s.pubsub, skioEngine, s.Logger).Start(); err != nil {
+		return err
+	}
+
+	return nil
+
+}
 func (s *Server) RegisterGlobalMiddlewares() {
 	s.router.Use(middleware.Recover())
 	s.router.Use(middleware.Secure())
