@@ -25,10 +25,14 @@ func (s *Server) PushNotification(c echo.Context) error {
 
 	var setOfNotification notification.SetOfNotifications
 
-	// init notification
+	// init notifications
 	for _, noti := range req.Notifications {
 		uid := fmt.Sprintf("%v.%v", time.Now(), noti.UserId)
 		notiEntity := notification.NewNotification(uid, req.From, noti.UserId, noti.Content)
+		err := s.NotificationStore.Create(ctx, &notiEntity)
+		if err != nil {
+			s.Logger.Errorf("Error creating notification with uid %v: %v", uid, err)
+		}
 		setOfNotification.Noitications = append(setOfNotification.Noitications, &notiEntity)
 	}
 
@@ -38,5 +42,5 @@ func (s *Server) PushNotification(c echo.Context) error {
 }
 
 func (s *Server) RegisterNotificationRoutes(router *echo.Group) {
-	router.POST("/user", s.PushNotification)
+	router.POST("/notifications", s.PushNotification)
 }

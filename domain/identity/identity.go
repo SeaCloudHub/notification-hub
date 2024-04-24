@@ -7,8 +7,13 @@ import (
 )
 
 var (
-	ErrInvalidCredentials = errors.New("invalid credentials")
-	ErrInvalidSession     = errors.New("invalid session")
+	ErrInvalidCredentials  = errors.New("invalid credentials")
+	ErrIncorrectPassword   = errors.New("incorrect password")
+	ErrInvalidPassword     = errors.New("invalid password")
+	ErrInvalidSession      = errors.New("invalid session")
+	ErrSessionTooOld       = errors.New("session too old")
+	ErrIdentityNotFound    = errors.New("identity not found")
+	ErrIdentityWasDisabled = errors.New("identity was disabled")
 )
 
 type Service interface {

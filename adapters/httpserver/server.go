@@ -10,6 +10,7 @@ import (
 
 	"github.com/SeaCloudHub/notification-hub/adapters/skio"
 	"github.com/SeaCloudHub/notification-hub/domain/identity"
+	"github.com/SeaCloudHub/notification-hub/domain/notification"
 	"github.com/SeaCloudHub/notification-hub/domain/permission"
 	"github.com/SeaCloudHub/notification-hub/pkg/config"
 	"github.com/SeaCloudHub/notification-hub/pkg/sentry"
@@ -25,6 +26,9 @@ type Server struct {
 	router *echo.Echo
 	Config *config.Config
 	Logger *zap.SugaredLogger
+
+	//storage adapters
+	NotificationStore notification.Store
 
 	// pubsub
 	pubsub realtimePubsub.Pubsub
@@ -61,7 +65,7 @@ func New(cfg *config.Config, logger *zap.SugaredLogger, options ...Options) (*Se
 	// s.router.Use(authMiddleware)
 
 	s.RegisterUserRoutes(s.router.Group("/api/users"))
-	s.RegisterNotificationRoutes(s.router.Group("api/notifications"))
+	s.RegisterNotificationRoutes(s.router.Group("api/internal"))
 
 	return &s, nil
 }
@@ -74,7 +78,7 @@ func (s *Server) SetupEngineForPubsubAndSocket() error {
 		return err
 	}
 
-	if err := subcriber.NewEngine(s.pubsub, skioEngine, s.Logger).Start(); err != nil {
+	if err := subcriber.NewEngine(s.pubsub, skioEngine, s.Logger, s.NotificationStore).Start(); err != nil {
 		return err
 	}
 

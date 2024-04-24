@@ -12,8 +12,11 @@ const (
 	StatusPending    = "pending"
 )
 
-type Storage interface {
-	Create(ctx context.Context, notification *Notification) (*Notification, error)
+type Store interface {
+	Create(ctx context.Context, notification *Notification) error
+	UpdateStatusByUid(ctx context.Context, uid string, status string) error
+	GetByUid(ctx context.Context, uid string) (*Notification, error)
+	ListByUserId(ctx context.Context, userId string) ([]*Notification, error)
 }
 
 type Notification struct {

@@ -26,12 +26,9 @@ func NewPubSub() *localPubsub {
 
 func (ps *localPubsub) Publish(ctx context.Context, topic pubsub.Topic, msg *pubsub.Message) error {
 	msg.SetChannel(topic)
-	//data.SetData(data)
 
 	go func() {
-		//fmt.Print(msg)
 		ps.messageQueue <- msg
-
 	}()
 	return nil
 }

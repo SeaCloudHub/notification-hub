@@ -6,6 +6,7 @@ import (
 
 	pubsub "github.com/SeaCloudHub/notification-hub/adapters/realtime_pubsub"
 	"github.com/SeaCloudHub/notification-hub/adapters/skio"
+	"github.com/SeaCloudHub/notification-hub/domain/notification"
 	"go.uber.org/zap"
 )
 
@@ -20,16 +21,18 @@ type consumerJob struct {
 }
 
 type consumerEngine struct {
-	pubsub   pubsub.Pubsub
-	rtEngine skio.RealtimeEngine
-	logger   *zap.SugaredLogger
+	pubsub    pubsub.Pubsub
+	rtEngine  skio.RealtimeEngine
+	logger    *zap.SugaredLogger
+	notiStore notification.Store
 }
 
-func NewEngine(pubsub pubsub.Pubsub, rtEngine skio.RealtimeEngine, logger *zap.SugaredLogger) *consumerEngine {
+func NewEngine(pubsub pubsub.Pubsub, rtEngine skio.RealtimeEngine, logger *zap.SugaredLogger, store notification.Store) *consumerEngine {
 	return &consumerEngine{
-		pubsub:   pubsub,
-		rtEngine: rtEngine,
-		logger:   logger,
+		pubsub:    pubsub,
+		rtEngine:  rtEngine,
+		logger:    logger,
+		notiStore: store,
 	}
 }
 
@@ -50,6 +53,6 @@ func (engine *consumerEngine) startSubTopic(topic pubsub.Topic, consumerJobs ...
 }
 
 func (engine *consumerEngine) Start() error {
-	engine.startSubTopic(UserNotificationChannel, NotifyWhenUserCall(engine.rtEngine, engine.logger))
+	engine.startSubTopic(UserNotificationChannel, NotifyWhenUserCall(engine.rtEngine, engine.logger, engine.notiStore))
 	return nil
 }
