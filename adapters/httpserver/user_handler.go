@@ -41,6 +41,10 @@ func (s *Server) Me(c echo.Context) error {
 	return c.JSON(http.StatusOK, c.Get(ContextKeyIdentity))
 }
 
+func (s *Server) GetNotification(ctx echo.Context) {
+	return
+}
+
 func (s *Server) ChangePassword(c echo.Context) error {
 	var (
 		ctx = mycontext.NewEchoContextAdapter(c)

@@ -32,5 +32,5 @@ type SetOfNotifications struct {
 }
 
 func NewNotification(id string, from string, to string, content string) Notification {
-	return Notification{Uid: id, From: from, Status: StatusReady, Content: content}
+	return Notification{Uid: id, From: from, Status: StatusReady, Content: content, To: to}
 }

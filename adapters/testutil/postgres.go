@@ -1,10 +1,8 @@
 package testutil
 
 import (
-	"context"
 	"testing"
 
-	"github.com/SeaCloudHub/notification-hub/adapters/postgrestore"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	migrate "github.com/rubenv/sql-migrate"
@@ -21,19 +19,19 @@ func MigrateTestDatabase(t testing.TB, db *sqlx.DB, migrationPath string) {
 	assert.NoError(t, err)
 }
 
-func CreateConnection(t testing.TB, dbName string, dbUser string, dbPass string) *sqlx.DB {
-	cont := SetupPostgresContainer(t, dbName, dbUser, dbPass)
-	host, _ := cont.Host(context.Background())
-	port, _ := cont.MappedPort(context.Background(), "5432")
+// func CreateConnection(t testing.TB, dbName string, dbUser string, dbPass string) *sqlx.DB {
+// 	cont := SetupPostgresContainer(t, dbName, dbUser, dbPass)
+// 	host, _ := cont.Host(context.Background())
+// 	port, _ := cont.MappedPort(context.Background(), "5432")
 
-	db, err := postgrestore.NewConnection(postgrestore.Options{
-		DBName:   dbName,
-		DBUser:   dbUser,
-		Password: dbPass,
-		Host:     host,
-		Port:     port.Port(),
-	})
-	assert.NoError(t, err)
+// 	db, err := postgrestore.NewConnection(postgrestore.Options{
+// 		DBName:   dbName,
+// 		DBUser:   dbUser,
+// 		Password: dbPass,
+// 		Host:     host,
+// 		Port:     port.Port(),
+// 	})
+// 	assert.NoError(t, err)
 
-	return db
-}
+// 	return db
+// }

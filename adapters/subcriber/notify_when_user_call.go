@@ -21,6 +21,9 @@ func NotifyWhenUserCall(rtEngine skio.RealtimeEngine, logger *zap.SugaredLogger,
 				fmt.Print("notication tung cai", notification)
 				fmt.Printf("content day ne: %v\n", notification.Content)
 				err := rtEngine.EmitToUser(notification.To, "notification", notification.Content)
+				fmt.Printf("content day ne da emit: %v\n", notification.Content)
+				fmt.Printf("loi ne: %v\n", err)
+
 				if err != nil {
 					// fmt.Printf("loi content day ne: %v\n", notification.Content)
 					if err := store.UpdateStatusByUid(ctx, notification.Uid, noti.StatusFailure); err != nil {
