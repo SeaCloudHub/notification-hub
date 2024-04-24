@@ -24,6 +24,6 @@ COPY --from=builder /build/server /server
 
 USER appuser
 
-EXPOSE 8088
+EXPOSE 8089
 
 CMD ["/server"]
