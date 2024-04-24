@@ -41,7 +41,7 @@ jobs:
     if: github.ref == 'refs/heads/github-workflow' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
-    needs: [make_app]
+    needs: [build_notification_hub]
 
     steps:
       - name: Checkout Repository
