@@ -8,14 +8,13 @@ type BookQuerySchema struct {
 }
 
 type NotificationSchema struct {
-	Id        int       `sql:"primary_key;auto_increment"`
-	Uid       string    `sql:"type:VARCHAR(128);index"`
-	From      string    `sql:"type:VARCHAR(128);not null"`
-	To        string    `sql:"type:VARCHAR(128);not null"`
-	Content   string    `sql:"type:VARCHAR(128)"`
-	Status    string    `sql:"type:VARCHAR(128)"`
-	CreatedAt time.Time `sql:"type:DATETIME;default:CURRENT_TIMESTAMP"`
-	UpdatedAt time.Time `sql:"type:DATETIME;default:CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"`
+	Uid       string    `gorm:"column:id"`
+	From      string    `gorm:"column:from"`
+	To        string    `gorm:"column:to"`
+	Content   string    `gorm:"column:content"`
+	Status    string    `gorm:"column:status"`
+	CreatedAt time.Time `gorm:"column:created_at"`
+	UpdatedAt time.Time `gorm:"column:updated_at"`
 }
 
 func (NotificationSchema) TableName() string {
