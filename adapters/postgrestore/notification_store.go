@@ -4,9 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/SeaCloudHub/notification-hub/domain/identity"
 	"github.com/SeaCloudHub/notification-hub/domain/notification"
+	"github.com/SeaCloudHub/notification-hub/pkg/pagination"
+
 	"gorm.io/gorm"
 )
 
@@ -57,7 +60,7 @@ func (s *NotificationStore) GetByUid(ctx context.Context, uid string) (*notifica
 
 func (s *NotificationStore) ListByUserId(ctx context.Context, userId string) ([]*notification.Notification, error) {
 	var notis []NotificationSchema
-	if err := s.db.WithContext(ctx).Where("to IN ?", userId).Find(&notis).Error; err != nil {
+	if err := s.db.WithContext(ctx).Where("to = ?", userId).Find(&notis).Error; err != nil {
 		return nil, fmt.Errorf("unexpected error: %w", err)
 	}
 
@@ -73,4 +76,46 @@ func (s *NotificationStore) ListByUserId(ctx context.Context, userId string) ([]
 	}
 
 	return notisResult, nil
+}
+
+func (s *NotificationStore) ListByUserIdUsingCursor(ctx context.Context, userId string, cursor *pagination.Cursor) ([]*notification.Notification, error) {
+	var notiSchemas []NotificationSchema
+
+	// parse cursor
+	cursorObj, err := pagination.DecodeToken[fsCursor](cursor.Token)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", identity.ErrIdentityInvalidCursor, err)
+	}
+
+	query := s.db.WithContext(ctx).Where("to = ?", userId)
+	if cursorObj.CreatedAt != nil {
+		query = query.Where("created_at >= ?", cursorObj.CreatedAt)
+	}
+
+	if err := query.Limit(cursor.Limit + 1).Find(&notiSchemas).Error; err != nil {
+		return nil, fmt.Errorf("unexpected error: %w", err)
+	}
+
+	if len(notiSchemas) > cursor.Limit {
+		cursor.SetNextToken(pagination.EncodeToken(fsCursor{CreatedAt: &notiSchemas[cursor.Limit].CreatedAt}))
+		notiSchemas = notiSchemas[:cursor.Limit]
+	}
+
+	notisResult := make([]*notification.Notification, 0, len(notiSchemas))
+	for _, notiSchema := range notiSchemas {
+		notisResult = append(notisResult, &notification.Notification{
+			Uid:     notiSchema.Uid,
+			From:    notiSchema.From,
+			To:      notiSchema.To,
+			Content: notiSchema.Content,
+			Status:  notiSchema.Status,
+		})
+	}
+
+	return notisResult, nil
+
+}
+
+type fsCursor struct {
+	CreatedAt *time.Time
 }

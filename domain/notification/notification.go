@@ -2,6 +2,8 @@ package notification
 
 import (
 	"context"
+
+	"github.com/SeaCloudHub/notification-hub/pkg/pagination"
 )
 
 const (
@@ -17,6 +19,7 @@ type Store interface {
 	UpdateStatusByUid(ctx context.Context, uid string, status string) error
 	GetByUid(ctx context.Context, uid string) (*Notification, error)
 	ListByUserId(ctx context.Context, userId string) ([]*Notification, error)
+	ListByUserIdUsingCursor(ctx context.Context, userId string, cursor *pagination.Cursor) ([]*Notification, error)
 }
 
 type Notification struct {

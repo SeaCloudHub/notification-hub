@@ -15,6 +15,7 @@ type NotificationSchema struct {
 	Status    string    `gorm:"column:status"`
 	CreatedAt time.Time `gorm:"column:created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at"`
+	ViewedAt  time.Time `gorm:"column:viewed_at"`
 }
 
 func (NotificationSchema) TableName() string {
