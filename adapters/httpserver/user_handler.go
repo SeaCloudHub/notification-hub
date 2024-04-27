@@ -79,5 +79,5 @@ func (s *Server) RegisterUserRoutes(router *echo.Group) {
 	router.POST("/login", s.Login)
 	router.GET("/me", s.Me)
 	router.POST("/change-password", s.ChangePassword)
-	router.GET("/notifications", s.ListEntries)
+	router.GET("/notifications", s.ListPageEntries)
 }

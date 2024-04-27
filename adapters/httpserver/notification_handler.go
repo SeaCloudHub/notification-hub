@@ -47,6 +47,36 @@ func (s *Server) ListEntries(c echo.Context) error {
 
 }
 
+func (s *Server) ListPageEntries(c echo.Context) error {
+	var (
+		ctx = mycontext.NewEchoContextAdapter(c)
+		req model.ListPageEntriesRequest
+	)
+
+	if err := c.Bind(&req); err != nil {
+		return s.handleError(c, err, http.StatusBadRequest)
+	}
+
+	if err := req.Validate(ctx); err != nil {
+		return s.handleError(c, err, http.StatusBadRequest)
+	}
+
+	identity, _ := c.Get(ContextKeyIdentity).(*identity.Identity)
+	fmt.Print("user: ", identity)
+	pager := pagination.NewPager(req.Page, req.Limit)
+	notifications, err := s.NotificationStore.ListByUserIdUsingPaper(ctx, identity.ID, pager)
+
+	if err != nil {
+		return s.handleError(c, err, http.StatusBadRequest)
+	}
+
+	return s.success(c, model.ListPageEntriesResponse{
+		Entries:    notifications,
+		Pagination: pager.PageInfo(),
+	})
+
+}
+
 func (s *Server) PushNotification(c echo.Context) error {
 	var (
 		ctx = mycontext.NewEchoContextAdapter(c)

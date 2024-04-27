@@ -78,6 +78,42 @@ func (s *NotificationStore) ListByUserId(ctx context.Context, userId string) ([]
 	return notisResult, nil
 }
 
+func (s *NotificationStore) ListByUserIdUsingPaper(ctx context.Context, userId string, pager *pagination.Pager) ([]*notification.Notification, error) {
+	var (
+		notiSchemas []NotificationSchema
+		total       int64
+	)
+
+	if err := s.db.WithContext(ctx).Model(&notiSchemas).
+		Where("to = ?", userId).
+		Count(&total).Error; err != nil {
+		return nil, fmt.Errorf("unexpected error: %w", err)
+	}
+
+	pager.SetTotal(total)
+
+	offset, limit := pager.Do()
+	if err := s.db.WithContext(ctx).
+		Where("to = ?", userId).
+		Offset(offset).Limit(limit).Find(&notiSchemas).Error; err != nil {
+		return nil, fmt.Errorf("unexpected error: %w", err)
+	}
+
+	notisResult := make([]*notification.Notification, 0, len(notiSchemas))
+	for _, notiSchema := range notiSchemas {
+		notisResult = append(notisResult, &notification.Notification{
+			Uid:     notiSchema.Uid,
+			From:    notiSchema.From,
+			To:      notiSchema.To,
+			Content: notiSchema.Content,
+			Status:  notiSchema.Status,
+		})
+	}
+
+	return notisResult, nil
+
+}
+
 func (s *NotificationStore) ListByUserIdUsingCursor(ctx context.Context, userId string, cursor *pagination.Cursor) ([]*notification.Notification, error) {
 	var notiSchemas []NotificationSchema
 

@@ -20,6 +20,7 @@ type Store interface {
 	GetByUid(ctx context.Context, uid string) (*Notification, error)
 	ListByUserId(ctx context.Context, userId string) ([]*Notification, error)
 	ListByUserIdUsingCursor(ctx context.Context, userId string, cursor *pagination.Cursor) ([]*Notification, error)
+	ListByUserIdUsingPaper(ctx context.Context, userId string, pager *pagination.Pager) ([]*Notification, error)
 }
 
 type Notification struct {
