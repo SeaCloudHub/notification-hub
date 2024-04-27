@@ -8,6 +8,14 @@ import (
 	"github.com/SeaCloudHub/notification-hub/pkg/validation"
 )
 
+type UpdateViewedTimeRequest struct {
+	IdNotification string `json:"id_noti"`
+}
+
+type UpdateViewedTimeResponse struct {
+	Status string `json:"status"`
+}
+
 type Notification struct {
 	UserId  string `json:"user_id"`
 	Content string `json:"content"`

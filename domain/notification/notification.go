@@ -2,6 +2,7 @@ package notification
 
 import (
 	"context"
+	"time"
 
 	"github.com/SeaCloudHub/notification-hub/pkg/pagination"
 )
@@ -21,6 +22,7 @@ type Store interface {
 	ListByUserId(ctx context.Context, userId string) ([]*Notification, error)
 	ListByUserIdUsingCursor(ctx context.Context, userId string, cursor *pagination.Cursor) ([]*Notification, error)
 	ListByUserIdUsingPaper(ctx context.Context, userId string, pager *pagination.Pager) ([]*Notification, error)
+	UpdateViewedTime(ctx context.Context, uid string, userId string, timeView time.Time) error
 }
 
 type Notification struct {

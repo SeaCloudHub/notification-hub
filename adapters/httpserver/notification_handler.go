@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -62,12 +63,15 @@ func (s *Server) ListPageEntries(c echo.Context) error {
 	}
 
 	identity, _ := c.Get(ContextKeyIdentity).(*identity.Identity)
+	if identity == nil {
+		return s.handleError(c, errors.New("identity is nil"), http.StatusNonAuthoritativeInfo)
+	}
 	fmt.Print("user: ", identity)
 	pager := pagination.NewPager(req.Page, req.Limit)
 	notifications, err := s.NotificationStore.ListByUserIdUsingPaper(ctx, identity.ID, pager)
 
 	if err != nil {
-		return s.handleError(c, err, http.StatusBadRequest)
+		return s.handleError(c, err, http.StatusInternalServerError)
 	}
 
 	return s.success(c, model.ListPageEntriesResponse{
@@ -77,6 +81,28 @@ func (s *Server) ListPageEntries(c echo.Context) error {
 
 }
 
+func (s *Server) UpdateViewedTime(c echo.Context) error {
+	var (
+		ctx = mycontext.NewEchoContextAdapter(c)
+		req model.UpdateViewedTimeRequest
+	)
+
+	if err := c.Bind(&req); err != nil {
+		return s.handleError(c, err, http.StatusBadRequest)
+	}
+
+	identity, _ := c.Get(ContextKeyIdentity).(*identity.Identity)
+	if identity == nil {
+		return s.handleError(c, errors.New("identity is nil"), http.StatusNonAuthoritativeInfo)
+	}
+
+	if err := s.NotificationStore.UpdateViewedTime(ctx, req.IdNotification, identity.ID, time.Now()); err != nil {
+		return s.handleError(c, err, http.StatusInternalServerError)
+	}
+
+	return s.success(c, model.NotificationResponse{Status: "updated"})
+
+}
 func (s *Server) PushNotification(c echo.Context) error {
 	var (
 		ctx = mycontext.NewEchoContextAdapter(c)
