@@ -96,7 +96,7 @@ func (s *Server) UpdateViewedTime(c echo.Context) error {
 		return s.handleError(c, errors.New("identity is nil"), http.StatusNonAuthoritativeInfo)
 	}
 
-	if err := s.NotificationStore.UpdateViewedTime(ctx, req.IdNotification, identity.ID, time.Now()); err != nil {
+	if err := s.NotificationStore.UpdateViewedTimeAndStatus(ctx, req.IdNotification, identity.ID, time.Now()); err != nil {
 		return s.handleError(c, err, http.StatusInternalServerError)
 	}
 

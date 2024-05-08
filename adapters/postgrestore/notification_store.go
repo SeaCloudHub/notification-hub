@@ -33,9 +33,12 @@ func (s *NotificationStore) Create(ctx context.Context, notification *notificati
 	return s.db.WithContext(ctx).Create(&notiSchema).Error
 }
 
-func (s *NotificationStore) UpdateViewedTime(ctx context.Context, uid string, userId string, timeView time.Time) error {
+func (s *NotificationStore) UpdateViewedTimeAndStatus(ctx context.Context, uid string, userId string, timeView time.Time) error {
 	return s.db.WithContext(ctx).Model(&NotificationSchema{}).
-		Where("id = ? AND to = ?", uid, userId).Update("viewed_at", timeView).Error
+		Where("id = ? AND to = ? AND status = ?", uid, userId, notification.StatusSuccess).Updates(map[string]interface{}{
+		"status":    notification.StatusViewed,
+		"viewed_at": timeView,
+	}).Error
 }
 
 func (s *NotificationStore) UpdateStatusByUid(ctx context.Context, uid string, status string) error {

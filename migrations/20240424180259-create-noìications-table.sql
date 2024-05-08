@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS "notifications"
     "status"                VARCHAR(255) NOT NULL DEFAULT '',
     "created_at"            TIMESTAMPTZ DEFAULT NOW(),
     "updated_at"            TIMESTAMPTZ DEFAULT NOW(),
-    "viewed_at"             TIMESTAMPTZ,
+    "viewed_at"             TIMESTAMPTZ
 );
 
 -- +migrate Down

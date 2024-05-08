@@ -126,7 +126,7 @@ func (engine *rtEngine) Run(e *echo.Echo, identitySvc identity.Service) error {
 
 		appSck := NewAppSocket(s)
 
-		engine.saveAppSocket(iden.ID, appSck)
+		engine.saveAppSocket(iden, appSck)
 
 		s.Emit("authenticated", iden)
 	})
