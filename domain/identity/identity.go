@@ -7,25 +7,19 @@ import (
 )
 
 var (
-	ErrInvalidCredentials  = errors.New("invalid credentials")
-	ErrIncorrectPassword   = errors.New("incorrect password")
-	ErrInvalidPassword     = errors.New("invalid password")
-	ErrInvalidSession      = errors.New("invalid session")
-	ErrSessionTooOld       = errors.New("session too old")
-	ErrIdentityNotFound    = errors.New("identity not found")
+	ErrInvalidCredentials    = errors.New("invalid credentials")
+	ErrIncorrectPassword     = errors.New("incorrect password")
+	ErrInvalidPassword       = errors.New("invalid password")
+	ErrInvalidSession        = errors.New("invalid session")
+	ErrSessionTooOld         = errors.New("session too old")
+	ErrIdentityNotFound      = errors.New("identity not found")
+	ErrIdentityInvalidCursor = errors.New("identity invalid cursor")
+
 	ErrIdentityWasDisabled = errors.New("identity was disabled")
 )
 
 type Service interface {
-	Login(ctx context.Context, email string, password string) (*Session, error)
-	WhoAmI(ctx context.Context, token string) (*Identity, error)
-	ChangePassword(ctx context.Context, id *Identity, oldPassword string, newPassword string) error
-	SyncPasswordChangedAt(ctx context.Context, id *Identity) error
-
-	// Admin APIs
-	CreateIdentity(ctx context.Context, email string, password string) (*Identity, error)
-	ListIdentities(ctx context.Context, pageToken string, pageSize int64) ([]Identity, string, error)
-	ChangeIdentityState(ctx context.Context, id string, state string) (*Identity, error)
+	WhoAmI(ctx context.Context, token string) (string, error)
 }
 
 type Identity struct {

@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -8,11 +9,100 @@ import (
 	"github.com/SeaCloudHub/notification-hub/adapters/httpserver/model"
 	realtimePubsub "github.com/SeaCloudHub/notification-hub/adapters/realtime_pubsub"
 	"github.com/SeaCloudHub/notification-hub/adapters/subcriber"
+	"github.com/SeaCloudHub/notification-hub/domain/identity"
 	"github.com/SeaCloudHub/notification-hub/domain/notification"
+
 	"github.com/SeaCloudHub/notification-hub/pkg/mycontext"
+	"github.com/SeaCloudHub/notification-hub/pkg/pagination"
 	"github.com/labstack/echo/v4"
 )
 
+func (s *Server) ListEntries(c echo.Context) error {
+	var (
+		ctx = mycontext.NewEchoContextAdapter(c)
+		req model.ListEntriesRequest
+	)
+
+	if err := c.Bind(&req); err != nil {
+		return s.handleError(c, err, http.StatusBadRequest)
+	}
+
+	if err := req.Validate(ctx); err != nil {
+		return s.handleError(c, err, http.StatusBadRequest)
+	}
+
+	identity, _ := c.Get(ContextKeyIdentity).(*identity.Identity)
+
+	cursor := pagination.NewCursor(req.Cursor, req.Limit)
+
+	notifications, err := s.NotificationStore.ListByUserIdUsingCursor(ctx, identity.ID, cursor)
+
+	if err != nil {
+		return s.handleError(c, err, http.StatusBadRequest)
+	}
+
+	return s.success(c, model.ListEntriesResponse{
+		Entries: notifications,
+		Cursor:  cursor.NextToken(),
+	})
+
+}
+
+func (s *Server) ListPageEntries(c echo.Context) error {
+	var (
+		ctx = mycontext.NewEchoContextAdapter(c)
+		req model.ListPageEntriesRequest
+	)
+
+	if err := c.Bind(&req); err != nil {
+		return s.handleError(c, err, http.StatusBadRequest)
+	}
+
+	if err := req.Validate(ctx); err != nil {
+		return s.handleError(c, err, http.StatusBadRequest)
+	}
+
+	identity, _ := c.Get(ContextKeyIdentity).(string)
+	if identity == "" {
+		return s.handleError(c, errors.New("identity is nil"), http.StatusNonAuthoritativeInfo)
+	}
+	fmt.Print("user: ", identity)
+	pager := pagination.NewPager(req.Page, req.Limit)
+	notifications, err := s.NotificationStore.ListByUserIdUsingPaper(ctx, identity, pager)
+
+	if err != nil {
+		return s.handleError(c, err, http.StatusInternalServerError)
+	}
+
+	return s.success(c, model.ListPageEntriesResponse{
+		Entries:    notifications,
+		Pagination: pager.PageInfo(),
+	})
+
+}
+
+func (s *Server) UpdateViewedTime(c echo.Context) error {
+	var (
+		ctx = mycontext.NewEchoContextAdapter(c)
+		req model.UpdateViewedTimeRequest
+	)
+
+	if err := c.Bind(&req); err != nil {
+		return s.handleError(c, err, http.StatusBadRequest)
+	}
+
+	identity, _ := c.Get(ContextKeyIdentity).(*identity.Identity)
+	if identity == nil {
+		return s.handleError(c, errors.New("identity is nil"), http.StatusNonAuthoritativeInfo)
+	}
+
+	if err := s.NotificationStore.UpdateViewedTimeAndStatus(ctx, req.IdNotification, identity.ID, time.Now()); err != nil {
+		return s.handleError(c, err, http.StatusInternalServerError)
+	}
+
+	return s.success(c, model.NotificationResponse{Status: "updated"})
+
+}
 func (s *Server) PushNotification(c echo.Context) error {
 	var (
 		ctx = mycontext.NewEchoContextAdapter(c)

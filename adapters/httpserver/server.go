@@ -54,15 +54,15 @@ func New(cfg *config.Config, logger *zap.SugaredLogger, options ...Options) (*Se
 	s.RegisterHealthCheck(s.router.Group(""))
 	s.RegisterWebSocket(s.router.Group(""))
 
-	// authMiddleware := s.NewAuthentication("header:Authorization", "Bearer",
-	// 	[]string{
-	// 		"/healthz",
-	// 		"/api/users/login",
-	// 		"/demo",
-	// 	},
-	// ).Middleware()
+	authMiddleware := s.NewAuthentication("header:Authorization", "Bearer",
+		[]string{
+			"/healthz",
+			"/api/users/login",
+			"/demo",
+		},
+	).Middleware()
 
-	// s.router.Use(authMiddleware)
+	s.router.Use(authMiddleware)
 
 	s.RegisterUserRoutes(s.router.Group("/api/users"))
 	s.RegisterNotificationRoutes(s.router.Group("api/internal"))
