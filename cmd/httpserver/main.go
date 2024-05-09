@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/SeaCloudHub/notification-hub/adapters/services"
 	"log"
 	"net/http"
 
@@ -44,6 +45,7 @@ func main() {
 
 	server, err := httpserver.New(cfg, applog)
 	server.NotificationStore = postgrestore.NewNotificationStore(db)
+	server.IdentityService = services.NewIdentityService(cfg)
 
 	if err != nil {
 		applog.Fatal(err)

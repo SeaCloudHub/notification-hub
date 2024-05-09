@@ -62,13 +62,13 @@ func (s *Server) ListPageEntries(c echo.Context) error {
 		return s.handleError(c, err, http.StatusBadRequest)
 	}
 
-	identity, _ := c.Get(ContextKeyIdentity).(*identity.Identity)
-	if identity == nil {
+	identity, _ := c.Get(ContextKeyIdentity).(string)
+	if identity == "" {
 		return s.handleError(c, errors.New("identity is nil"), http.StatusNonAuthoritativeInfo)
 	}
 	fmt.Print("user: ", identity)
 	pager := pagination.NewPager(req.Page, req.Limit)
-	notifications, err := s.NotificationStore.ListByUserIdUsingPaper(ctx, identity.ID, pager)
+	notifications, err := s.NotificationStore.ListByUserIdUsingPaper(ctx, identity, pager)
 
 	if err != nil {
 		return s.handleError(c, err, http.StatusInternalServerError)

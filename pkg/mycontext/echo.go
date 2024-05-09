@@ -11,6 +11,17 @@ type EchoContextAdapter struct {
 	c echo.Context
 }
 
+func BuildEchoContextWithToken(e echo.Context, token string) *EchoContextAdapter {
+	// Create HTTP headers with the provided token
+	headers := e.Request().Header
+	headers.Set("Authorization", "Bearer "+token)
+
+	e.Request().Header = headers
+
+	// Wrap the Echo context in your custom adapter
+	return &EchoContextAdapter{c: e}
+}
+
 func NewEchoContextAdapter(c echo.Context) *EchoContextAdapter {
 	return &EchoContextAdapter{c: c}
 }

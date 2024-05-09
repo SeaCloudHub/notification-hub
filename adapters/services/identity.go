@@ -28,6 +28,9 @@ func newKratosClient(url string, debug bool) *kratos.APIClient {
 }
 
 func (s *IdentityService) WhoAmI(ctx context.Context, token string) (string, error) {
+	if token == "" {
+		return "", fmt.Errorf("token is empty")
+	}
 	session, _, err := s.publicClient.FrontendAPI.ToSession(ctx).XSessionToken(token).Execute()
 	if err != nil {
 

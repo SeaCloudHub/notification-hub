@@ -22,7 +22,7 @@
         console.log('Client connected');
 
         // Emit token
-        socket.emit('authenticate', 'abcsakdasjkjsakjdkajdjaswiqe');
+        socket.emit('authenticate', 'ory_st_L4VcSpDdSRh9tqLLg8wnoR0d7ZKtbS6I');
     })
 
     // socket.on('authenticated', () => {
@@ -33,6 +33,11 @@
     socket.on('reply', (msg) => console.log(msg));
 
     socket.on('disconnect', () => console.log('Socket is disconnected'))
+
+    socket.on('notification', (data) => console.log('data: ', data) )
+    socket.on('authenticated', (data) => console.log('data: ', data) )
+
+
 
     // setInterval(function () {
     //     socket.emit('notice', {age: 10})

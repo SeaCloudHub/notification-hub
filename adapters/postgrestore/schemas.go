@@ -9,8 +9,8 @@ type BookQuerySchema struct {
 
 type NotificationSchema struct {
 	Uid       string    `gorm:"column:id"`
-	From      string    `gorm:"column:from"`
-	To        string    `gorm:"column:to"`
+	From      string    `gorm:"column:from_user"`
+	To        string    `gorm:"column:to_user"`
 	Content   string    `gorm:"column:content"`
 	Status    string    `gorm:"column:status"`
 	CreatedAt time.Time `gorm:"column:created_at"`

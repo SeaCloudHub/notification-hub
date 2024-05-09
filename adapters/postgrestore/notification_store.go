@@ -35,7 +35,7 @@ func (s *NotificationStore) Create(ctx context.Context, notification *notificati
 
 func (s *NotificationStore) UpdateViewedTimeAndStatus(ctx context.Context, uid string, userId string, timeView time.Time) error {
 	return s.db.WithContext(ctx).Model(&NotificationSchema{}).
-		Where("id = ? AND to = ? AND status = ?", uid, userId, notification.StatusSuccess).Updates(map[string]interface{}{
+		Where("id = ? AND to_user = ? AND status = ?", uid, userId, notification.StatusSuccess).Updates(map[string]interface{}{
 		"status":    notification.StatusViewed,
 		"viewed_at": timeView,
 	}).Error
@@ -68,7 +68,7 @@ func (s *NotificationStore) GetByUid(ctx context.Context, uid string) (*notifica
 
 func (s *NotificationStore) ListByUserId(ctx context.Context, userId string) ([]*notification.Notification, error) {
 	var notis []NotificationSchema
-	if err := s.db.WithContext(ctx).Where("to = ?", userId).Find(&notis).Error; err != nil {
+	if err := s.db.WithContext(ctx).Where("to_user = ?", userId).Find(&notis).Error; err != nil {
 		return nil, fmt.Errorf("unexpected error: %w", err)
 	}
 
@@ -93,16 +93,18 @@ func (s *NotificationStore) ListByUserIdUsingPaper(ctx context.Context, userId s
 	)
 
 	if err := s.db.WithContext(ctx).Model(&notiSchemas).
-		Where("to = ?", userId).
+		Where("to_user = ?", userId).
 		Count(&total).Error; err != nil {
 		return nil, fmt.Errorf("unexpected error: %w", err)
 	}
+
+	s.db.Debug()
 
 	pager.SetTotal(total)
 
 	offset, limit := pager.Do()
 	if err := s.db.WithContext(ctx).
-		Where("to = ?", userId).
+		Where("to_user = ?", userId).
 		Offset(offset).Limit(limit).Find(&notiSchemas).Error; err != nil {
 		return nil, fmt.Errorf("unexpected error: %w", err)
 	}
@@ -131,7 +133,7 @@ func (s *NotificationStore) ListByUserIdUsingCursor(ctx context.Context, userId 
 		return nil, fmt.Errorf("%w: %w", identity.ErrIdentityInvalidCursor, err)
 	}
 
-	query := s.db.WithContext(ctx).Where("to = ?", userId)
+	query := s.db.WithContext(ctx).Where("to_user = ?", userId)
 	if cursorObj.CreatedAt != nil {
 		query = query.Where("created_at >= ?", cursorObj.CreatedAt)
 	}

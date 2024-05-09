@@ -1,8 +1,8 @@
 package skio
 
 import (
-	"context"
 	"fmt"
+	"github.com/SeaCloudHub/notification-hub/pkg/mycontext"
 	"sync"
 
 	"github.com/SeaCloudHub/notification-hub/domain/identity"
@@ -91,13 +91,13 @@ func (engine *rtEngine) EmitToUser(userId string, key string, data interface{}) 
 	return nil
 }
 
-func (engine *rtEngine) Run(e *echo.Echo, identitySvc identity.Service) error {
+func (engine *rtEngine) RunWithEchoCtx(eCtx echo.Context, identitySvc identity.Service) (error, *socketio.Server) {
 	server, err := socketio.NewServer(&engineio.Options{
 		Transports: []transport.Transport{websocket.Default},
 	})
 
 	if err != nil {
-		return err
+		return err, server
 	}
 
 	engine.server = server
@@ -112,12 +112,13 @@ func (engine *rtEngine) Run(e *echo.Echo, identitySvc identity.Service) error {
 		fmt.Errorf("rtEngine.Run.OnError: ", err)
 	})
 
-	// server.OnDisconnect("/", func(c socketio.Conn, s string) {
-
-	// })
+	server.OnDisconnect("/", func(c socketio.Conn, s string) {
+		fmt.Errorf("disconnected")
+	})
 
 	server.OnEvent("/", "authenticate", func(s socketio.Conn, token string) {
-		iden, err := identitySvc.WhoAmI(context.TODO(), token)
+
+		iden, err := identitySvc.WhoAmI(mycontext.BuildEchoContextWithToken(eCtx, token), token)
 		if err != nil {
 			s.Emit("authentication_failure", err)
 			s.Close()
@@ -133,8 +134,16 @@ func (engine *rtEngine) Run(e *echo.Echo, identitySvc identity.Service) error {
 
 	go server.Serve()
 
-	e.Any("/socket.io/", func(context echo.Context) error {
-		server.ServeHTTP(context.Response(), context.Request())
+	return nil, server
+
+}
+
+func (engine *rtEngine) Run(e *echo.Echo, identitySvc identity.Service) error {
+
+	e.GET("/socket.io/", func(c echo.Context) error {
+		_, server := engine.RunWithEchoCtx(c, identitySvc)
+		server.ServeHTTP(c.Response(), c.Request())
+
 		return nil
 	})
 
