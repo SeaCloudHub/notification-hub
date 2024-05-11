@@ -2,8 +2,6 @@ package subcriber
 
 import (
 	"context"
-	"fmt"
-
 	pubsub "github.com/SeaCloudHub/notification-hub/adapters/realtime_pubsub"
 	"github.com/SeaCloudHub/notification-hub/adapters/skio"
 	"github.com/SeaCloudHub/notification-hub/domain/notification"
@@ -42,9 +40,10 @@ func (engine *consumerEngine) startSubTopic(topic pubsub.Topic, consumerJobs ...
 
 	go func() {
 		for _, item := range consumerJobs {
-			message := <-c
-			fmt.Print(message)
-			go item.Hld(ctx, message)
+			for {
+				message := <-c
+				go item.Hld(ctx, message)
+			}
 		}
 
 	}()
