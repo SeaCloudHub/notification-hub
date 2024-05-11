@@ -20,8 +20,8 @@ func NotifyWhenUserCall(rtEngine skio.RealtimeEngine, logger *zap.SugaredLogger,
 					if err := store.UpdateStatusByUid(ctx, notification.Uid, noti.StatusFailure); err != nil {
 						logger.Errorf("Error updating notification status failure: %v", err)
 					}
-
 				}
+
 				if err := store.UpdateStatusByUid(ctx, notification.Uid, noti.StatusSuccess); err != nil {
 					logger.Errorf("Error updating notification status success: %v", err)
 				}

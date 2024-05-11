@@ -126,7 +126,9 @@ func (s *Server) PushNotification(c echo.Context) error {
 		setOfNotification.Noitications = append(setOfNotification.Noitications, &notiEntity)
 	}
 
-	s.pubsub.Publish(ctx, subcriber.UserNotificationChannel, realtimePubsub.NewMessage(setOfNotification))
+	message := realtimePubsub.NewMessage(setOfNotification)
+
+	s.pubsub.Publish(ctx, subcriber.UserNotificationChannel, message)
 
 	return s.success(c, model.NotificationResponse{Status: "processing"})
 }
