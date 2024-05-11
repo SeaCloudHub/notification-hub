@@ -140,7 +140,7 @@ func (engine *rtEngine) RunWithEchoCtx(eCtx echo.Context, identitySvc identity.S
 
 func (engine *rtEngine) Run(e *echo.Echo, identitySvc identity.Service) error {
 
-	e.GET("/socket.io/", func(c echo.Context) error {
+	e.Any("/socket.io/", func(c echo.Context) error {
 		_, server := engine.RunWithEchoCtx(c, identitySvc)
 		server.ServeHTTP(c.Response(), c.Request())
 
