@@ -4,7 +4,7 @@ go 1.22.0
 
 require (
 	github.com/getsentry/sentry-go v0.25.0
-	github.com/googollee/go-socket.io v1.4.4
+	github.com/googollee/go-socket.io v1.7.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/joho/godotenv v1.5.1
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -28,6 +28,8 @@ require (
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/gobuffalo/logger v1.0.7 // indirect
 	github.com/gobuffalo/packd v1.0.2 // indirect
+	github.com/gofrs/uuid v4.0.0+incompatible // indirect
+	github.com/gomodule/redigo v1.8.4 // indirect
 	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/gosimple/slug v1.13.1 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
