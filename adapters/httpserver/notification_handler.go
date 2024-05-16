@@ -91,12 +91,22 @@ func (s *Server) UpdateViewedTime(c echo.Context) error {
 		return s.handleError(c, err, http.StatusBadRequest)
 	}
 
-	identity, _ := c.Get(ContextKeyIdentity).(*identity.Identity)
-	if identity == nil {
+	identity, _ := c.Get(ContextKeyIdentity).(string)
+	if identity == "" {
 		return s.handleError(c, errors.New("identity is nil"), http.StatusNonAuthoritativeInfo)
 	}
 
-	if err := s.NotificationStore.UpdateViewedTimeAndStatus(ctx, req.IdNotification, identity.ID, time.Now()); err != nil {
+	// check exist
+	count, err := s.NotificationStore.CheckExistToUpdateViewedTimeAndStatus(ctx, req.IdNotification, identity)
+	if err != nil {
+		return s.handleError(c, err, http.StatusInternalServerError)
+	}
+
+	if count == 0 {
+		return s.handleError(c, errors.New("can not find suitable record to update"), http.StatusBadRequest)
+	}
+
+	if err := s.NotificationStore.UpdateViewedTimeAndStatus(ctx, req.IdNotification, identity, time.Now()); err != nil {
 		return s.handleError(c, err, http.StatusInternalServerError)
 	}
 
