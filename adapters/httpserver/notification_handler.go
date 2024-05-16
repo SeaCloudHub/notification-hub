@@ -81,6 +81,29 @@ func (s *Server) ListPageEntries(c echo.Context) error {
 
 }
 
+func (s *Server) MarkAllAsView(c echo.Context) error {
+	var (
+		ctx = mycontext.NewEchoContextAdapter(c)
+		req model.MarkEntireViewedRequest
+	)
+
+	if err := c.Bind(&req); err != nil {
+		return s.handleError(c, err, http.StatusBadRequest)
+	}
+
+	identity, _ := c.Get(ContextKeyIdentity).(string)
+	if identity == "" {
+		return s.handleError(c, errors.New("identity is nil"), http.StatusNonAuthoritativeInfo)
+	}
+
+	if err := s.NotificationStore.UpdateViewedTimeAndStatusForAllEntireNotifications(ctx, identity, time.Now()); err != nil {
+		return s.handleError(c, err, http.StatusInternalServerError)
+	}
+
+	return s.success(c, model.MarkEntireViewedResponse{Status: "updated"})
+
+}
+
 func (s *Server) UpdateViewedTime(c echo.Context) error {
 	var (
 		ctx = mycontext.NewEchoContextAdapter(c)
@@ -110,7 +133,7 @@ func (s *Server) UpdateViewedTime(c echo.Context) error {
 		return s.handleError(c, err, http.StatusInternalServerError)
 	}
 
-	return s.success(c, model.NotificationResponse{Status: "updated"})
+	return s.success(c, model.UpdateViewedTimeResponse{Status: "updated"})
 
 }
 func (s *Server) PushNotification(c echo.Context) error {

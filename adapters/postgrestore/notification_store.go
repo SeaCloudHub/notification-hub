@@ -41,6 +41,14 @@ func (s *NotificationStore) UpdateViewedTimeAndStatus(ctx context.Context, uid s
 	}).Error
 }
 
+func (s *NotificationStore) UpdateViewedTimeAndStatusForAllEntireNotifications(ctx context.Context, userId string, timeView time.Time) error {
+	return s.db.WithContext(ctx).Model(&NotificationSchema{}).
+		Where("to_user = ? AND status = ?", userId, notification.StatusSuccess).Updates(map[string]interface{}{
+		"status":    notification.StatusViewed,
+		"viewed_at": timeView,
+	}).Error
+}
+
 func (s *NotificationStore) CheckExistToUpdateViewedTimeAndStatus(ctx context.Context, uid string, userId string) (int, error) {
 	num := int64(0)
 	err := s.db.WithContext(ctx).Model(&NotificationSchema{}).

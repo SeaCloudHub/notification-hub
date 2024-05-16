@@ -25,6 +25,7 @@ type Store interface {
 	ListByUserIdUsingPaper(ctx context.Context, userId string, pager *pagination.Pager) ([]*Notification, error)
 	UpdateViewedTimeAndStatus(ctx context.Context, uid string, userId string, timeView time.Time) error
 	CheckExistToUpdateViewedTimeAndStatus(ctx context.Context, uid string, userId string) (int, error)
+	UpdateViewedTimeAndStatusForAllEntireNotifications(ctx context.Context, userId string, timeView time.Time) error
 }
 
 type Notification struct {

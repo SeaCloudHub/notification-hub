@@ -13,4 +13,5 @@ func (s *Server) Me(c echo.Context) error {
 func (s *Server) RegisterUserRoutes(router *echo.Group) {
 	router.GET("/notifications", s.ListPageEntries)
 	router.PATCH("/notifications", s.UpdateViewedTime)
+	router.PATCH("/marking-viewed-notifications", s.MarkAllAsView)
 }

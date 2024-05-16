@@ -12,6 +12,13 @@ type UpdateViewedTimeRequest struct {
 	IdNotification string `json:"id_noti"`
 }
 
+type MarkEntireViewedRequest struct {
+}
+
+type MarkEntireViewedResponse struct {
+	Status string `json:"status"`
+}
+
 type UpdateViewedTimeResponse struct {
 	Status string `json:"status"`
 }
