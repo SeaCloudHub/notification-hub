@@ -92,13 +92,9 @@ func (engine *rtEngine) EmitToUser(userId string, key string, data interface{}) 
 }
 
 func (engine *rtEngine) RunWithEchoCtx(eCtx echo.Context, identitySvc identity.Service) (error, *socketio.Server) {
-	server, err := socketio.NewServer(&engineio.Options{
+	server := socketio.NewServer(&engineio.Options{
 		Transports: []transport.Transport{websocket.Default},
 	})
-
-	if err != nil {
-		return err, server
-	}
 
 	engine.server = server
 

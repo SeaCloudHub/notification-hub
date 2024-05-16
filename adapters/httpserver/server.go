@@ -1,12 +1,10 @@
 package httpserver
 
 import (
-	"net/http"
-	"strings"
-
 	realtimePubsub "github.com/SeaCloudHub/notification-hub/adapters/realtime_pubsub"
 	localEngine "github.com/SeaCloudHub/notification-hub/adapters/realtime_pubsub/local_engine"
 	"github.com/SeaCloudHub/notification-hub/adapters/subcriber"
+	"net/http"
 
 	"github.com/SeaCloudHub/notification-hub/adapters/skio"
 	"github.com/SeaCloudHub/notification-hub/domain/identity"
@@ -85,20 +83,41 @@ func (s *Server) SetupEngineForPubsubAndSocket() error {
 	return nil
 
 }
+
+func CORSMiddleware(allowOrigin string) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			c.Response().Header().Set("Access-Control-Allow-Origin", allowOrigin)
+			c.Response().Header().Set("Access-Control-Allow-Credentials", "true")
+			c.Response().Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+			c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type, Content-Length, X-CSRF-Token, Token, session, Origin, Host, Connection, Accept-Encoding, Accept-Language, X-Requested-With")
+
+			if c.Request().Method == http.MethodOptions {
+				return c.NoContent(http.StatusNoContent)
+			}
+
+			c.Request().Header.Del("Origin")
+
+			return next(c)
+		}
+	}
+}
+
 func (s *Server) RegisterGlobalMiddlewares() {
 	s.router.Use(middleware.Recover())
 	s.router.Use(middleware.Secure())
 	s.router.Use(middleware.RequestID())
 	s.router.Use(middleware.Gzip())
 	s.router.Use(sentryecho.New(sentryecho.Options{Repanic: true}))
+	s.router.Use(CORSMiddleware("*"))
+	//// CORS
+	//if s.Config.AllowOrigins != "" {
+	//	aos := strings.Split(s.Config.AllowOrigins, ",")
+	//	s.router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+	//		AllowOrigins: aos,
+	//	}))
+	//}
 
-	// CORS
-	if s.Config.AllowOrigins != "" {
-		aos := strings.Split(s.Config.AllowOrigins, ",")
-		s.router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-			AllowOrigins: aos,
-		}))
-	}
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
