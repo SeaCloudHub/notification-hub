@@ -79,7 +79,7 @@ jobs:
             fi
             
             docker run -d --name ${{ env.CONTAINER_NAME }} \
-            --network my-net \
+            --network root_seacloudhub \
             --env-file ~/${{ env.ENV_FILE_NAME }} \
             -e VIRTUAL_HOST=${{ secrets.VIRTUAL_HOST }} \
             -e LETSENCRYPT_HOST=${{ secrets.LETSENCRYPT_HOST }} \
