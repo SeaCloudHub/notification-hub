@@ -124,6 +124,7 @@ func (s *NotificationStore) ListByUserIdUsingPaper(ctx context.Context, userId s
 	offset, limit := pager.Do()
 	if err := s.db.WithContext(ctx).
 		Where("to_user = ?", userId).
+		Order("created_at desc").
 		Offset(offset).Limit(limit).Find(&notiSchemas).Error; err != nil {
 		return nil, fmt.Errorf("unexpected error: %w", err)
 	}

@@ -89,7 +89,8 @@ func CORSMiddleware(allowOrigin string) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			c.Response().Header().Set("Access-Control-Allow-Origin", allowOrigin)
 			c.Response().Header().Set("Access-Control-Allow-Credentials", "true")
-			c.Response().Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+			c.Response().Header().Set("Access-Control-Allow-Methods",
+				"PATCH, POST, OPTIONS, GET, PUT, DELETE")
 			c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type, Content-Length, X-CSRF-Token, Token, session, Origin, Host, Connection, Accept-Encoding, Accept-Language, X-Requested-With")
 
 			if c.Request().Method == http.MethodOptions {

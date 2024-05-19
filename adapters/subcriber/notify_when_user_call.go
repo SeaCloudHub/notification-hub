@@ -14,7 +14,7 @@ func NotifyWhenUserCall(rtEngine skio.RealtimeEngine, logger *zap.SugaredLogger,
 		Hld: func(ctx context.Context, message *pubsub.Message) error {
 			setNotifications := message.Data().(noti.SetOfNotifications)
 			for _, notification := range setNotifications.Noitications {
-				err := rtEngine.EmitToUser(notification.To, "notification", notification.Content)
+				err := rtEngine.EmitToUser(notification.To, "notification", notification)
 
 				if err != nil {
 					if err := store.UpdateStatusByUid(ctx, notification.Uid, noti.StatusFailure); err != nil {
