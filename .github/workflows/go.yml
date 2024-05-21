@@ -85,7 +85,6 @@ jobs:
             -e VIRTUAL_HOST=${{ secrets.VIRTUAL_HOST }} \
             -e LETSENCRYPT_HOST=${{ secrets.LETSENCRYPT_HOST }} \
             -e LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }} \
-            -e LETSENCRYPT_TEST=true \
             -p ${{ env.PORT }}:8089 ${{ env.IMAGE_NAME }}
 
             docker image prune -f
