@@ -12,8 +12,8 @@ env:
   CONTAINER_NAME: notification-hub
   PORT: 8089
   ENV_FILE_NAME: .env.notification
-  AWS_REGION: ap-northeast-1  # Update this to your AWS region
-  ECR_REPOSITORY: graduation-project # Update this to your ECR repository name
+  AWS_REGION: ap-northeast-1
+  ECR_REPOSITORY: graduation-project
 
 jobs:
   build_notification_hub:
@@ -32,7 +32,7 @@ jobs:
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
-        with: 
+        with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
@@ -40,13 +40,11 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-        with:
-          mask-password: 'false'
 
       - name: Docker build and push
         run: |
           # Define the ECR repository URI
-          repository_uri="${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}"
+          repository_uri="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}"
           
           # Build the Docker image
           docker build -t $repository_uri -f cmd/httpserver/Dockerfile .
