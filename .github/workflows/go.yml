@@ -12,7 +12,7 @@ env:
   CONTAINER_NAME: notification-hub
   PORT: 8089
   ENV_FILE_NAME: .env.notification
-  AWS_REGION: ap-northeast-1
+  AWS_REGION: us-east-1
   ECR_REPOSITORY: graduation-project
 
 jobs:
