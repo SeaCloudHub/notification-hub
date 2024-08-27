@@ -14,7 +14,7 @@ env:
   ENV_FILE_NAME: .env.notification
   AWS_REGION: us-east-1
   ECR_REPOSITORY: notification-hub
-  CLUSTER_NAME: k8s-project
+  CLUSTER_NAME: "k8s-project"
 
 jobs:
   build_notification_hub:
