@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-hub
+  labels:
+    app: notification-hub
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: notification-hub
+  template:
+    metadata:
+      labels:
+        app: notification-hub
+    spec:
+      containers:
+      - name: notification-hub
+        image: 175793575305.dkr.ecr.us-east-1.amazonaws.com/notification-hub
+        imagePullPolicy: Always 
+        ports:
+        - containerPort: 8089
