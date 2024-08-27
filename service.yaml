@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+apiVersion: v1
 kind: Service
 metadata:
   name: notification-hub
@@ -6,7 +6,7 @@ spec:
   selector:
     app: notification-hub
   ports:
-  - protocal: TCP
-    port: 8089
-    targetPort: 8088
+    - protocol: TCP
+      port: 8089
+      targetPort: 8088
   type: LoadBalancer
