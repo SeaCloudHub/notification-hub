@@ -57,7 +57,7 @@ func main() {
 
 	fmt.Print(server)
 
-	addr := fmt.Sprintf(":%d", cfg.Port)
+	addr := fmt.Sprintf(":%s", cfg.Port)
 	applog.Info("server started!")
 	applog.Fatal(http.ListenAndServe(addr, server))
 }
