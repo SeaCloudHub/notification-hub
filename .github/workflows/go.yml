@@ -5,55 +5,29 @@ on:
     branches:
       - main
       - prod
-      - github-workflow
-      
   workflow_dispatch:
 
-env:
-  IMAGE_NAME: seacloudserver/notification-hub
-  CONTAINER_NAME: notification-hub
-  PORT: 8089
-  ENV_FILE_NAME: .env.notification
-  AWS_REGION: us-east-1
-  KUBE_REGION: ap-southeast-1
-  ECR_REPOSITORY: notification-hub
-  CLUSTER_NAME: k8s-project
-  HELM_CHART_REPO: golang-devops-hungtnv/project-infra
-  HELM_CHART_PATH: helm/notification-hub
-  CONFIG_PATH: configs/notification-hub
-  ENVIRONMENT: develop 
-
-
 jobs:
-  build_notification_hub:
-    if: github.ref == 'refs/heads/main'
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    
-    
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Checkout Centralized Helm Charts
-        uses: actions/checkout@v2
-        with:
-          repository: golang-devops-hungtnv/project-infra
-          path: centralized-charts
-          ref: main  
-
-      - name: Determine Branch and Set Environment Variables
+      - name: Determine Environment and Set Config Path
         id: set-env
         run: |
           if [[ $GITHUB_REF == 'refs/heads/main' ]]; then
             echo "ENVIRONMENT=develop" >> $GITHUB_ENV
+            echo "CONFIG_PATH=configs/notification-hub/develop" >> $GITHUB_ENV
           elif [[ $GITHUB_REF == 'refs/heads/prod' ]]; then
             echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+            echo "CONFIG_PATH=configs/notification-hub/prod" >> $GITHUB_ENV
           fi
-
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -69,25 +43,41 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Docker build and push
+      - name: Docker build
         run: |
-          # Define the ECR repository URI
           repository_uri="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}"
-          
-          # Build the Docker image
           docker build -t $repository_uri -f cmd/httpserver/Dockerfile .
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-          # Push the Docker image to ECR
+      - name: Docker push
+        run: |
+          repository_uri="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}"
           docker push $repository_uri
         env:
           AWS_REGION: ${{ env.AWS_REGION }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build  # This ensures that the deploy job runs after the build job
+    permissions:
+      contents: read
+      packages: write
 
-      - name: Update kube config 
-        run: aws eks update-kubeconfig --name $CLUSTER_NAME --region $KUBE_REGION
-  
+    steps:
+      - name: Checkout Centralized Helm Charts
+        uses: actions/checkout@v2
+        with:
+          repository: golang-devops-hungtnv/project-infra
+          path: centralized-charts
+          ref: ${{ github.ref == 'refs/heads/main' && 'main' || 'develop' }}
+
+      - name: Update kube config
+        run: aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --region ${{ env.KUBE_REGION }}
 
       - name: Install Helm
         run: |
@@ -95,30 +85,21 @@ jobs:
           chmod 700 get_helm.sh
           ./get_helm.sh
 
-      - name: Apply ConfigMap
+      - name: Apply ConfigMap and Secret
         run: |
-          kubectl apply -f centralized-charts/${{env.CONFIG_PATH}}/${{env.ENVIRONMENT}}/app-config-maps.yaml
-          kubectl apply -f centralized-charts/${{env.CONFIG_PATH}}/${{env.ENVIRONMENT}}/app-secret_achived.yaml
-
-      - name: List contents of centralized-charts directory
-        run: ls -R centralized-charts
+          kubectl apply -f centralized-charts/${{ env.CONFIG_PATH }}/app-config-maps.yaml
+          kubectl apply -f centralized-charts/${{ env.CONFIG_PATH }}/app-secret_achived.yaml
 
       - name: Update Helm chart values
         run: |
           sed -i "s|image.repository:.*|image.repository: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}|" centralized-charts/${{ env.HELM_CHART_PATH }}/values.yaml
           sed -i "s|image.tag:.*|image.tag: latest|" centralized-charts/${{ env.HELM_CHART_PATH }}/values.yaml
-        shell: bash
 
       - name: Helm dependency update
-        run: helm dependency update centralized-charts/${{ env.HELM_CHART_PATH }} 
-  
+        run: helm dependency update centralized-charts/${{ env.HELM_CHART_PATH }}
+
       - name: Helm package
         run: helm package centralized-charts/${{ env.HELM_CHART_PATH }}
-  
-      - name: Helm upgrade or install
-        run: helm upgrade --install notification-hub /home/runner/work/project-notification-hub/project-notification-hub/notification-hub-*.tgz --namespace default
 
-      # - name: Deploy to EKS 
-      #   run: | 
-      #     kubectl apply -f deployment.yaml 
-      #     kubectl apply -f service.yaml
+      - name: Helm upgrade or install
+        run: helm upgrade --install notification-hub centralized-charts/${{ env.HELM_CHART_PATH }}/notification-hub-*.tgz --namespace default
