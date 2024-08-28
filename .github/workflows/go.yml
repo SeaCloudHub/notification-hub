@@ -7,6 +7,20 @@ on:
       - prod
   workflow_dispatch:
 
+env:
+  IMAGE_NAME: seacloudserver/notification-hub
+  CONTAINER_NAME: notification-hub
+  PORT: 8089
+  ENV_FILE_NAME: .env.notification
+  AWS_REGION: us-east-1
+  KUBE_REGION: ap-southeast-1
+  ECR_REPOSITORY: notification-hub
+  CLUSTER_NAME: k8s-project
+  HELM_CHART_REPO: golang-devops-hungtnv/project-infra
+  HELM_CHART_PATH: helm/notification-hub
+  CONFIG_PATH: configs/notification-hub
+  ENVIRONMENT: develop 
+
 jobs:
   build:
     runs-on: ubuntu-latest
