@@ -101,7 +101,7 @@ jobs:
         run: helm package centralized-charts/${{ env.HELM_CHART_PATH }}
   
       - name: Helm upgrade or install
-        run: helm upgrade --install notification-hub /home/runner/work/graduation-project-notification-hub/graduation-project-notification-hub/notification-hub-*.tgz --namespace default
+        run: helm upgrade --install notification-hub /home/runner/work/project-notification-hub/project-notification-hub/notification-hub-*.tgz --namespace default
 
       # - name: Deploy to EKS 
       #   run: | 
