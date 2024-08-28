@@ -106,10 +106,19 @@ jobs:
           chmod 700 get_helm.sh
           ./get_helm.sh
 
+
+      - name: Apply Common  ConfigMap and Secret
+        run: |
+          kubectl apply -f centralized-charts/configs/common/${{ env.ENVIRONMENT }}/app-config-maps.yaml
+          kubectl apply -f centralized-charts/configs/common/${{ env.ENVIRONMENT }}/app-secret_achived.yaml
+  
+
       - name: Apply ConfigMap and Secret
         run: |
           kubectl apply -f centralized-charts/${{ env.CONFIG_PATH }}/${{ env.ENVIRONMENT }}/app-config-maps.yaml
           kubectl apply -f centralized-charts/${{ env.CONFIG_PATH }}/${{ env.ENVIRONMENT }}/app-secret_achived.yaml
+
+          
 
       - name: Update Helm chart values
         run: |

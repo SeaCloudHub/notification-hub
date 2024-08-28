@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/SeaCloudHub/notification-hub/adapters/httpserver"
 	"github.com/SeaCloudHub/notification-hub/adapters/postgrestore"
 	"github.com/SeaCloudHub/notification-hub/adapters/services"
@@ -9,8 +12,6 @@ import (
 	"github.com/SeaCloudHub/notification-hub/pkg/logger"
 	"github.com/SeaCloudHub/notification-hub/pkg/sentry"
 	sentrygo "github.com/getsentry/sentry-go"
-	"log"
-	"net/http"
 )
 
 func main() {
@@ -24,6 +25,8 @@ func main() {
 	if err != nil {
 		applog.Fatal(err)
 	}
+
+	applog.Infof("env: %v", cfg)
 
 	err = sentrygo.Init(sentrygo.ClientOptions{
 		Dsn:              cfg.SentryDSN,
