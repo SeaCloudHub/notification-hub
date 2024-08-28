@@ -86,10 +86,10 @@ jobs:
         run: |
           sed -i "s|image.repository:.*|image.repository: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}|" centralized-charts/${{ env.HELM_CHART_PATH }}/values.yaml
           sed -i "s|image.tag:.*|image.tag: latest|" centralized-charts/${{ env.HELM_CHART_PATH }}/values.yaml
+        shell: bash
 
-
-          - name: Helm dependency update
-          run: helm dependency update centralized-charts/${{ env.HELM_CHART_PATH }}
+      - name: Helm dependency update
+        run: helm dependency update centralized-charts/${{ env.HELM_CHART_PATH }}
   
       - name: Helm package
         run: helm package centralized-charts/${{ env.HELM_CHART_PATH }}
