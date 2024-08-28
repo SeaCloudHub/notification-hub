@@ -18,6 +18,7 @@ env:
   CLUSTER_NAME: k8s-project
   HELM_CHART_REPO: convitnhodev/project-infra
   HELM_CHART_PATH: helm/notification-hub
+  CONFIG_PATH: configs/notification-hub/develop
 
 jobs:
   build_notification_hub:
@@ -79,6 +80,11 @@ jobs:
           chmod 700 get_helm.sh
           ./get_helm.sh
 
+      - name: Apply ConfigMap
+        run: |
+          kubectl apply -f ${{env.HELM_CHART_REPO}}/${{env.CONFIG_PATH}}/app-config-maps.yaml
+          kubectl apply -f ${{env.HELM_CHART_REPO}}/${{env.CONFIG_PATH}}/app-secret_achived.yaml
+          
       - name: List contents of centralized-charts directory
         run: ls -R centralized-charts
 
