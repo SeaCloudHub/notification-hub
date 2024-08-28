@@ -89,13 +89,13 @@ jobs:
         shell: bash
 
       - name: Helm dependency update
-        run: helm dependency update centralized-charts/${{ env.HELM_CHART_PATH }}
+        run: helm dependency update centralized-charts/${{ env.HELM_CHART_PATH }} --destination /home/runner/work/graduation-project-notification-hub/charts
   
       - name: Helm package
         run: helm package centralized-charts/${{ env.HELM_CHART_PATH }}
   
       - name: Helm upgrade or install
-        run: helm upgrade --install notification-hub centralized-charts/${{ env.HELM_CHART_PATH }}/notification-hub-*.tgz --namespace default
+        run: helm upgrade --install notification-hub /home/runner/work/graduation-project-notification-hub/charts/notification-hub-*.tgz --namespace default
 
       # - name: Deploy to EKS 
       #   run: | 
