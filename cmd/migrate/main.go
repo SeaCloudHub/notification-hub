@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"strconv"
 
 	"github.com/SeaCloudHub/notification-hub/adapters/postgrestore"
 	"github.com/SeaCloudHub/notification-hub/pkg/config"
@@ -30,7 +29,7 @@ func main() {
 		DBUser:   cfg.DB.User,
 		Password: cfg.DB.Pass,
 		Host:     cfg.DB.Host,
-		Port:     strconv.Itoa(cfg.DB.Port),
+		Port:     cfg.DB.Port,
 		SSLMode:  false,
 	})
 	if err != nil {

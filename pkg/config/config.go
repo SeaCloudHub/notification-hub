@@ -18,7 +18,7 @@ type Config struct {
 	DB struct {
 		Name      string `envconfig:"DB_NAME"`
 		Host      string `envconfig:"DB_HOST"`
-		Port      int    `envconfig:"DB_PORT"`
+		Port      string `envconfig:"DB_PORT"`
 		User      string `envconfig:"DB_USER"`
 		Pass      string `envconfig:"DB_PASS"`
 		EnableSSL bool   `envconfig:"ENABLE_SSL"`

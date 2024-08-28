@@ -2,7 +2,6 @@ package postgrestore
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/SeaCloudHub/notification-hub/pkg/config"
@@ -26,7 +25,7 @@ func ParseFromConfig(c *config.Config) Options {
 		DBUser:   c.DB.User,
 		Password: c.DB.Pass,
 		Host:     c.DB.Host,
-		Port:     strconv.Itoa(c.DB.Port),
+		Port:     c.DB.Port,
 		SSLMode:  c.DB.EnableSSL,
 		Debug:    c.Debug,
 	}
