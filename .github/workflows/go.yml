@@ -17,7 +17,7 @@ env:
   ECR_REPOSITORY: notification-hub
   CLUSTER_NAME: k8s-project
   HELM_CHART_REPO: convitnhodev/project-infra
-  HELM_CHART_PATH: charts/notification-hub
+  HELM_CHART_PATH: helm/notification-hub
 
 jobs:
   build_notification_hub:
