@@ -23,6 +23,8 @@ func main() {
 		applogger.Fatalf("cannot load config: %v\n", err)
 	}
 
+	log.Printf("Config Env: %v\n", cfg)
+
 	db, err := postgrestore.NewConnection(postgrestore.Options{
 		DBName:   cfg.DB.Name,
 		DBUser:   cfg.DB.User,
