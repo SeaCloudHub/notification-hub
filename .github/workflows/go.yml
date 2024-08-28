@@ -88,7 +88,7 @@ jobs:
         with:
           repository: golang-devops-hungtnv/project-infra
           path: centralized-charts
-          ref: ${{ github.ref == 'refs/heads/main' && 'main' || 'develop' }}
+          ref: ${{ github.ref == 'refs/heads/main' && 'main' || 'prod' }}
 
       - name: Update kube config
         run: aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --region ${{ env.KUBE_REGION }}
