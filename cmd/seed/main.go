@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/SeaCloudHub/notification-hub/pkg/config"
@@ -16,6 +17,8 @@ func main() {
 		log.Fatalf("cannot load config: %v\n", err)
 	}
 	// defer logger.Sync(applog)
+
+	fmt.Print("Ban moi nhat")
 
 	cfg, err := config.LoadConfig()
 	if err != nil {
