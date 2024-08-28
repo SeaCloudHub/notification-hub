@@ -82,9 +82,9 @@ jobs:
 
       - name: Apply ConfigMap
         run: |
-          kubectl apply -f ${{env.HELM_CHART_REPO}}/${{env.CONFIG_PATH}}/app-config-maps.yaml
-          kubectl apply -f ${{env.HELM_CHART_REPO}}/${{env.CONFIG_PATH}}/app-secret_achived.yaml
-          
+          kubectl apply -f centralized-charts/${{env.CONFIG_PATH}}/app-config-maps.yaml
+          kubectl apply -f centralized-charts/${{env.CONFIG_PATH}}/app-secret_achived.yaml
+
       - name: List contents of centralized-charts directory
         run: ls -R centralized-charts
 
