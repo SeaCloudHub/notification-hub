@@ -35,7 +35,7 @@ jobs:
       - name: Checkout Centralized Helm Charts
         uses: actions/checkout@v2
         with:
-          repository: convitnhodev/project-infra
+          repository: golang-devops-hungtn/project-infra
           path: centralized-charts
           ref: main  
 
