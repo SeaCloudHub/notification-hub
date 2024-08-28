@@ -79,7 +79,8 @@ jobs:
           chmod 700 get_helm.sh
           ./get_helm.sh
 
-  
+      - name: List contents of centralized-charts directory
+        run: ls -R centralized-charts
 
       - name: Update Helm chart values
         run: |
