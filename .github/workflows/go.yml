@@ -108,8 +108,8 @@ jobs:
 
       - name: Apply ConfigMap and Secret
         run: |
-          kubectl apply -f centralized-charts/${{ env.CONFIG_PATH }}/app-config-maps.yaml
-          kubectl apply -f centralized-charts/${{ env.CONFIG_PATH }}/app-secret_achived.yaml
+          kubectl apply -f centralized-charts/${{ env.CONFIG_PATH }}/${{ env.ENVIRONMENT }}/app-config-maps.yaml
+          kubectl apply -f centralized-charts/${{ env.CONFIG_PATH }}/${{ env.ENVIRONMENT }}/app-secret_achived.yaml
 
       - name: Update Helm chart values
         run: |
