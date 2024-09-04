@@ -17,8 +17,8 @@ env:
   ECR_REPOSITORY: notification-hub
   CLUSTER_NAME: k8s-project
   HELM_CHART_REPO: golang-devops-hungtnv/project-infra
-  HELM_CHART_PATH: helm/notification-hub
-  CONFIG_PATH: configs/notification-hub
+  HELM_CHART_PATH: helm/project-notification-hub
+  CONFIG_PATH: configs/project-notification-hub
   ENVIRONMENT: develop 
 
 jobs:
